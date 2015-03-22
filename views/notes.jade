@@ -1,0 +1,12 @@
+//
+   Created by youqingkui on 15/3/22.
+
+extends layout
+
+block content
+
+  each n in notes.notes
+    li
+      a(href="/note/" + n.guid)=n.title
+      each t in n.tagGuids
+        h4= t
