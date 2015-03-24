@@ -4,4 +4,21 @@
 extends layout
 
 block content
-  div!= content
+  div#main.cf
+    div.primary
+      article.post
+        header
+          h2
+            a(href='/note/' +  note.guid)= note.title
+          .entry-meta
+            span
+              i.fa.fa-calendar= note.created
+
+            span.count
+              i.fa.fa-book
+              // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
+              | 2
+              // /fb
+        .entry!= note.content
+
+    include sider

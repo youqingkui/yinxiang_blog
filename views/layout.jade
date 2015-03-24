@@ -2,6 +2,22 @@ doctype html
 html
   head
     title= title
+    //link(rel='styleSheet', href='/lib/bootstrap/css/bootstrap.min.css')
+    link(rel='styleSheet', href='/lib/fabox/font-awesome.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    block header
+
   body
-    block content
+
+    div#wrap
+      include nav
+
+
+
+      block content
+
+
+
+    block script
+      //script(src='/lib/jquery/jquery.min.js')
+      //script(src='/lib/bootstrap/js/bootstrap.min.js')

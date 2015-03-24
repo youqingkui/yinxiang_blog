@@ -1,0 +1,55 @@
+.primary
+  each note in notes
+    article.loop-post
+      h2
+        a(href='/note/' + note.guid)= note.title
+      .entry-meta
+        span
+          i.fa.fa-calendar= note.created
+
+
+        span.count
+          i.fa.fa-book
+          // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
+          | 2
+          // /fb
+      //.post-intro
+      //  .p_part
+      //    p 微信APP支付
+      //  .p_part
+      //    p
+      //      | 最近微信支付莫名其妙的进行了升级，在微信开放平台提交的移动应用开发中微信支付，如果收到的是这样的邮件则无法使用在开放平台的移动应用开发的文档。因为邮件中少了2个关键的KEY：paySignKey, partnerKey。
+      //  .p_part
+      //    p 一直询问支持，给的都是支付开发教程（微信商户平台版）
+      //    p  ，研究了下，都是公众号的开发。
+      //  .p_part
+      //    p
+      //      | 后面找到了这份文档，研究了一番，依旧觉得是公众号的，里面的统一下单需要个openid，这分明是微信公众号的开发。后面看到openid只是在公众号开发的时候才传递，所以决定按照这份文档一试。
+      //  .p_part
+      //    p 按照文档中的业务流程，当进行到第三步的时候，文档这样说:
+      //  .p_part
+      //    p 步骤3：统一下......
+  //article.loop-post
+  //  h2
+  //    a(href='/post/hi-farbox') Hi Farbox
+  //  .entry-meta
+  //    span
+  //      i.fa.fa-calendar  
+  //      | 2015-03-18
+  //    span.count
+  //      i.fa.fa-book
+  //      // fb:7a3bcee217fbf216d59ad63a48491e6d:visits
+  //      | 7
+  //      // /fb
+  //  .post-intro
+  //    .p_part
+  //      p Hi FarBox
+  //    .p_part
+  //      p
+  //        | 前天一直想寻找个云端存储来保存一些回忆的照片，了解到Dropbox。但是Dropbox需要翻墙，在Android手机上不好使用。便搜索别人是如何处理翻墙问题，结果在知乎上，看到了FarBox，进入一看。还不知道是什么，以为是一个MD的编辑同步器，可以同步到DropBox上。网站都浏览了一把，原来是个Blog。
+  //    .p_part
+  //      p
+  //        | 本来我对这些东西不太感冒，大学的时候用过Wordpress，前段时间了解了Hexo，因为Hexo是基于Node，所以对其很有兴趣，但是觉得文档不太好。后来用了马克飞象，便一直使用他作为写作。
+  //    .p_part
+  //      p 有时间的时候我也去了解印象笔记的API，想到时候能够调出这些笔记来构成......
+  //.pager.cf
