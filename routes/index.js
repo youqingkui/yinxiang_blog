@@ -12,7 +12,7 @@
 
   client = require('../servers/ervernote');
 
-  noteStore = client.getNoteStore();
+  noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore');
 
   Note = require('../models/note');
 
@@ -80,13 +80,13 @@
   router.get('/test', function(req, res) {
     var filterNote, guid;
     filterNote = new Evernote.NoteFilter();
-    guid = '2e5dc578-8a1d-4303-8be7-5711ea6fa301';
+    guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406';
     filterNote.notebookGuid = guid;
-    return noteStore.findNotes(filterNote, 0, 100, function(err, notes) {
+    return noteStore.findNotes(filterNote, 50, 50, function(err, notes) {
       if (err) {
         return console.log(err);
       }
-      async.each(notes.notes, function(item, callback) {
+      return async.each(notes.notes, function(item, callback) {
         var newNote;
         newNote = new Note();
         newNote.guid = item.guid;
@@ -101,15 +101,25 @@
           if (err) {
             return console.log(err);
           }
-          return newNote.save(function(err, noteInfo) {
-            if (err) {
-              return console.log(err);
-            }
-            return console.log(noteInfo);
-          });
+          if (!note) {
+            return newNote.save(function(err, noteInfo) {
+              if (err) {
+                return console.log(err);
+              }
+              return callback();
+            });
+          } else {
+            console.log("已经存在:", note.guid);
+            return callback();
+          }
         });
+      }, function(eachErr) {
+        if (eachErr) {
+          return console.log(err);
+        }
+        return res.send("ok");
+        return res.redirect('/test_note');
       });
-      return res.send("ok");
     });
   });
 
@@ -137,10 +147,16 @@
                 if (err) {
                   return console.log(err);
                 }
-                console.log(note);
                 return callback();
               });
             });
+          }, function(eachErr) {
+            if (eachErr) {
+              if (eachErr) {
+                console.log(err);
+              }
+            }
+            return res.send("ok");
           });
         }
       ]

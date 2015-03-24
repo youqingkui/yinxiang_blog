@@ -4,7 +4,7 @@ router = express.Router()
 async = require('async')
 Evernote = require('evernote').Evernote;
 client = require('../servers/ervernote')
-noteStore = client.getNoteStore()
+noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore')
 Note = require('../models/note')
 
 
@@ -57,13 +57,12 @@ router.get '/note/:noteGuid', (req, res) ->
 
 router.get '/test', (req, res) ->
   filterNote = new Evernote.NoteFilter()
-  guid = '2e5dc578-8a1d-4303-8be7-5711ea6fa301'
+  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
   filterNote.notebookGuid = guid
 
-  noteStore.findNotes filterNote, 0, 100, (err, notes) ->
+  noteStore.findNotes filterNote, 50, 50, (err, notes) ->
     if err
       return console.log err
-
     async.each notes.notes, (item, callback) ->
       newNote = new Note()
       newNote.guid = item.guid
@@ -78,26 +77,22 @@ router.get '/test', (req, res) ->
         if err
           return console.log err
 
-        newNote.save (err, noteInfo) ->
-          if err
-            return console.log err
+        if not note
+          newNote.save (err, noteInfo) ->
+            if err
+              return console.log err
 
-          console.log noteInfo
+            callback()
 
+        else
+          console.log "已经存在:", note.guid
+          callback()
 
-
-
-
-
-
-
-
-
-
-
-
-
-    return res.send("ok")
+    ,(eachErr) ->
+      if eachErr
+        return console.log err
+      return res.send "ok"
+      return res.redirect('/test_note')
 
 
 router.get '/test_note', (req, res) ->
@@ -112,7 +107,7 @@ router.get '/test_note', (req, res) ->
     getNoteInfo:['getDbNote', (cb, result) ->
       notes = result.getDbNote
       async.eachSeries notes, (item, callback) ->
-        noteStore.getNote item.guid, true, false,false,false, (err, noteInfo) ->
+        noteStore.getNote item.guid,true,false,false,false, (err, noteInfo) ->
           if err
             return console.log err
 
@@ -121,8 +116,13 @@ router.get '/test_note', (req, res) ->
             if err
               return console.log err
 
-            console.log note
             callback()
+
+      ,(eachErr) ->
+        if eachErr
+          console.log err if eachErr
+
+        return res.send "ok"
     ]
 
 
