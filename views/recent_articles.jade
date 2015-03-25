@@ -1,0 +1,11 @@
+//
+   Created by youqingkui on 15/3/25.
+
+aside
+  h3
+    i.fa.fa-magic
+    span   Recent Articles
+  ul.recent_posts
+    each r in recentNote
+      li.listing-item
+        a(href='/note/#{r.guid}', title='#{r.title}')= r.title

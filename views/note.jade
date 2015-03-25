@@ -12,13 +12,37 @@ block content
             a(href='/note/' +  note.guid)= note.title
           .entry-meta
             span
-              i.fa.fa-calendar= note.created
+              i.fa.fa-calendar &nbsp;
+                = getLocalTime(note.created / 1000)
 
-            span.count
-              i.fa.fa-book
-              // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
-              | 2
+            if note.tags.length
+              li.fa.fa-tags
+                each t in note.tags
+                  a.tag(href='/tag/' + t) &nbsp;
+                    = t
+
+            if getLocalTime(note.created / 1000) != getLocalTime(note.updated / 1000)
+              span.count
+                i.fa.fa-clock-o &nbsp;
+                  = getLocalTime(note.updated/1000)
+
+            //span.count
+            //  i.fa.fa-book
+            //  // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
+            //  | 2
               // /fb
         .entry!= note.content
+        .ds-thread(data-thread-key='#{note.guid}', data-title='#{note.title}', data-url='note/' +  note.guid)
+        script(type='text/javascript').
+          var duoshuoQuery = {short_name:"youqingkui-farbox"};
+          (function() { var ds = document.createElement('script'); ds.type = 'text/javascript';ds.async = true;
+            ds.src = '//static.duoshuo.com/embed.js';ds.charset = 'UTF-8';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+          })();
+
+
 
     include sider
+
+block script
+

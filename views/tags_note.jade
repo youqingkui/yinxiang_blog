@@ -1,0 +1,22 @@
+//
+   Created by youqingkui on 15/3/25.
+
+extends layout
+
+block content
+  div#main.cf
+    div.primary
+      ul.archive-list
+        li.list-years= tag
+          ul.listing
+          each note in notes
+            li.listing-item
+              span
+                i.fa.fa-calendar &nbsp;
+                  =getLocalTime(note.created/1000)
+
+              a(href='/note/' + note.guid)= note.title
+    .sider
+      include tags
+
+

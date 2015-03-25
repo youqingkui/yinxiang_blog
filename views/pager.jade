@@ -1,0 +1,13 @@
+//
+   Created by youqingkui on 15/3/24.
+
+.pager.cf
+  if Number(currPage) != 1
+    a.prev(href='/?page=' + (Number(currPage) - 1))
+      i.fa.fa-angle-left
+      |  上一页
+
+  if Number(currPage) != Number(countPage)
+    a.next(href='/?page=' + (Number(currPage) + 1))
+      i.fa.fa-angle-right
+      |  下一页

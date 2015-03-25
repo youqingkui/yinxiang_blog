@@ -2,12 +2,9 @@
    Created by youqingkui on 15/3/23.
 
 .sider
-  aside
-    h3
-      i.fa.fa-magic
-      span   Recent Articles
-    ul.recent_posts
-      li.listing-item
-        a(href='/post/weixin_pay', title='weixin_pay') weixin_pay
-      li.listing-item
-        a(href='/post/hi-farbox', title='Hi Farbox') Hi Farbox
+
+  include recent_articles
+
+  include recent_comments
+
+  include tags

@@ -5,13 +5,25 @@
         a(href='/note/' + note.guid)= note.title
       .entry-meta
         span
-          i.fa.fa-calendar= note.created
+          i.fa.fa-calendar &nbsp;
+            =getLocalTime(note.created/1000)
+        if note.tags.length
+          li.fa.fa-tags
+            each t in note.tags
+              a.tag(href='/tag/' + t) &nbsp;
+                = t
 
+        if getLocalTime(note.created / 1000) != getLocalTime(note.updated / 1000)
+          span.count
+            i.fa.fa-clock-o &nbsp;
+              = getLocalTime(note.updated/1000)
 
-        span.count
-          i.fa.fa-book
-          // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
-          | 2
+        //span.count
+        //  i.fa.fa-book
+        //  // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
+        //  | 2
+
+  include pager
           // /fb
       //.post-intro
       //  .p_part

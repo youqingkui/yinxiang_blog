@@ -680,3 +680,17 @@ body {
         float: none;
     }
 }
+
+.loop-post a{
+    display: block;
+    /*background: ;*/
+}
+
+.loop-post a.tag{
+    display: inline;
+}
+
+
+div.tags a{
+    display: inline-block;
+}
