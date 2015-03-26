@@ -21,4 +21,8 @@ exports.toInt = (num) ->
   else
     return 0
 
+exports.eqArr = (arr1, arr2) ->
+  arr1 = arr1.sort()
+  arr2 = arr2.sort()
+  return arr1.toString() is arr2.toString()
 

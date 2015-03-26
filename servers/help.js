@@ -29,6 +29,12 @@
     }
   };
 
+  exports.eqArr = function(arr1, arr2) {
+    arr1 = arr1.sort();
+    arr2 = arr2.sort();
+    return arr1.toString() === arr2.toString();
+  };
+
 }).call(this);
 
 //# sourceMappingURL=help.js.map

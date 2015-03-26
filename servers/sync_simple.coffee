@@ -4,6 +4,7 @@ client = require('../servers/ervernote')
 noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore')
 Note = require('../models/note')
 SyncStatus = require('../models/sync_status')
+eqArr = require('./help').eqArr
 
 
 
@@ -23,7 +24,6 @@ SyncNewNote = () ->
   @reParams.includeDeleted = true
   @reParams.includeTagGuids = true
   @reParams.includeNotebookGuid = true
-  @reParams.includeTagGuids = true
 
   return
 
@@ -44,21 +44,30 @@ SyncNewNote::checkStatus = (cb) ->
     compareStatus:['getServerStatus', 'getDbStatusInfo', (callback, result) ->
       serverInfo = result.getServerStatus
       dbInfo = result.getDbStatusInfo
-      if serverInfo.updateCount != dbInfo.updateCount
-        self.needSync = true
+      console.log "serverInfo", serverInfo
+      console.log "dbInfo", dbInfo
 
+      if serverInfo.updateCount != dbInfo.updateCount
+        self.updateStatus serverInfo, dbInfo, (err, row) ->
+          return callback(err) if err
+          self.needSync = true
+          callback()
+      else
+        callback()
     ]
 
-  ,(autoErr, result) ->
+  ,(autoErr) ->
       return cb(autoErr) if autoErr
-      ser
+      cb()
 
 SyncNewNote::updateStatus = (s, d, cb) ->
   d.currentTime = s.currentTime
   d.fullSyncBefore = s.fullSyncBefore
   d.updateCount = s.updateCount
   d.uploaded = s.uploaded
-  d.save (err, up)
+  d.save (err, row) ->
+    return cb(err) if err
+    cb(null, row)
 
 SyncNewNote::getDbStatus = (cb) ->
   SyncStatus.findOne (err, row) ->
@@ -70,9 +79,6 @@ SyncNewNote::getDbStatus = (cb) ->
         cb(null, newStatus)
     else
       cb(null, row)
-
-
-
 
 
 SyncNewNote::getNoteCount = (cb) ->
@@ -98,6 +104,7 @@ SyncNewNote::syncInfo = (offset, max, fun) ->
       noteStore.findNotesMetadata self.filterNote, offset, max, self.reParams, (err, info) ->
         return cb(err) if err
         console.log "findNotesMetadata offset", offset
+        console.log info
         cb(null, info.notes)
 
     checkNew:['getSimpleInfo', (cb, result) ->
@@ -123,11 +130,86 @@ SyncNewNote::checkSimpleNote = (simpleArr, cb) ->
         self.createNote item, (cErr, newNote) ->
           console.log "new note", newNote.title
           return callback(cErr) if cErr
-      callback()
+          callback()
+      else
+        console.log "up note title ==>", note.title
+        self.updateNote note, item, (uErr, upNote) ->
+
+          return callback(uErr) if uErr
+          callback()
 
   ,(eachErr) ->
     return cb(eachErr) if eachErr
     cb()
+
+SyncNewNote::updateNote = (note, upInfo, cb) ->
+  self = @
+  async.auto
+    updateNoteBase:(callback) ->
+      self.updateNoteBase note, upInfo, (err, note1) ->
+        return callback(err) if err
+        callback(null, note1)
+
+    updateNoteContent:['updateNoteBase', (callback, result) ->
+      note = result.updateNoteBase
+      self.updateNoteContent note, (err, note2) ->
+        return callback(err) if err
+        callback(null, note2)
+    ]
+
+    updateNoteTagName:['updateNoteContent', (callback, result) ->
+      note = result.updateNoteContent
+      self.updateNoteTagName note, (err, note3) ->
+        return callback(err) if err
+        callback(null, note3)
+    ]
+  ,(autoErr) ->
+      return cb(autoErr) if autoErr
+      cb()
+
+
+
+SyncNewNote::updateNoteBase = (note, upInfo, cb) ->
+  baseUp = ['title', 'created', 'updated', 'deleted', 'tagGuids', 'notebookGuid']
+  upBase = false
+  for i in baseUp
+    if note[i] != upInfo[i]
+      note[i] = upInfo[i]
+      upBase = true
+
+  if upBase
+    note.save (err, row) ->
+      return cb(err) if err
+      cb(null, row)
+  else
+    cb(null, note)
+
+
+SyncNewNote::updateNoteContent = (note, cb) ->
+
+  noteStore.getNoteContent note.guid, (err, content) ->
+    return cb(err) if err
+    if note.content != content
+      note.content = content
+      note.save (sErr, row) ->
+        return cb(sErr) if sErr
+        cb(null, row)
+    else
+      cb(null, note)
+
+SyncNewNote::updateNoteTagName = (note, cb) ->
+  console.log "up note tag =========", note.title
+#  console.log note
+  noteStore.getNoteTagNames note.guid, (err, tagArr) ->
+    console.log tagArr
+    return cb(err) if err
+    if eqArr(note.tags, tagArr)
+      cb(null, note)
+    else
+      note.tags = tagArr
+      note.save (sErr, row) ->
+        return cb(sErr) if sErr
+        cb(null, row)
 
 
 SyncNewNote::createNote = (simpleInfo, cb) ->
@@ -145,7 +227,6 @@ SyncNewNote::createNote = (simpleInfo, cb) ->
     self.getNoteContent note, (gErr, newNote) ->
       return cb(gErr) if gErr
       cb(null, newNote)
-
 
 
 SyncNewNote::getNoteContent = (note, cb) ->

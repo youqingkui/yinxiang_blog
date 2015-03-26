@@ -242,6 +242,14 @@ router.get '/create_tags', (req, res) ->
 router.get '/new_note', (req, res) ->
   sync = new SyncNewNote()
   async.series [
+#      (cb) ->
+#        sync.checkStatus (err) ->
+#          return cb(err) if err
+#          console.log("sync.needSync", sync.needSync)
+#          if sync.needSync is false
+#            return res.send "status not change don't need sync"
+#          else
+#            cb()
       (cb) ->
         sync.getNoteCount (err) ->
           return cb(err) if err
