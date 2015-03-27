@@ -26,19 +26,25 @@ block content
                 i.fa.fa-clock-o &nbsp;
                   = getLocalTime(note.updated/1000)
 
-            //span.count
-            //  i.fa.fa-book
-            //  // fb:59815b34ea36246b7f25c9ceddd86eb2:visits
-            //  | 2
-              // /fb
+
         .entry!= note.content
-        .ds-thread(data-thread-key='#{note.guid}', data-title='#{note.title}', data-url='youqingkui.me/note/' +  note.guid)
-        script(type='text/javascript').
-          var duoshuoQuery = {short_name:"youqingkui-me"};
-          (function() { var ds = document.createElement('script'); ds.type = 'text/javascript';ds.async = true;
-            ds.src = '//static.duoshuo.com/embed.js';ds.charset = 'UTF-8';
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
-          })();
+        div#fb_comments_container
+          #disqus_thread
+          script(type='text/javascript').
+            /* * * CONFIGURATION VARIABLES * * */
+            var disqus_shortname = 'youqingkui-me';
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+              var dsq = document.createElement('script');
+              dsq.type = 'text/javascript';
+              dsq.async = true;
+              dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+              (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+          noscript
+            | Please enable JavaScript to view the
+            a(href='https://disqus.com/?ref_noscript', rel='nofollow') comments powered by Disqus.
+
 
 
 
