@@ -91,7 +91,7 @@ router.get '/page/:page', (req, res) ->
       }
 
 ### 查找对应笔记 ###
-router.get '/note/:noteGuid', (req, res) ->
+router.get '/note/:noteGuid', (req, res, next) ->
   noteGuid = req.params.noteGuid
   async.auto
     findNote:(cb) ->

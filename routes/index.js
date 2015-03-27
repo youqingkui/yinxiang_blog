@@ -138,7 +138,7 @@
 
   /* 查找对应笔记 */
 
-  router.get('/note/:noteGuid', function(req, res) {
+  router.get('/note/:noteGuid', function(req, res, next) {
     var noteGuid;
     noteGuid = req.params.noteGuid;
     return async.auto({
