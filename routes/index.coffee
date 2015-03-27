@@ -99,7 +99,7 @@ router.get '/note/:noteGuid', (req, res, next) ->
         if err
           return console.log err
 
-        next() if not note
+        return next() if not note
         cb(null, note)
 
     recentNote:(cb) ->

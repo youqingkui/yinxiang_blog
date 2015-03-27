@@ -150,7 +150,7 @@
             return console.log(err);
           }
           if (!note) {
-            next();
+            return next();
           }
           return cb(null, note);
         });
