@@ -86,7 +86,8 @@
         countPage: count,
         getLocalTime: getLocalTime,
         recentNote: result.getRecentNote,
-        tags: result.getTags.tags
+        tags: result.getTags.tags,
+        title: "友情's 笔记"
       });
     });
   });
@@ -128,7 +129,8 @@
         notes: result.pageNote,
         currPage: page,
         countPage: count,
-        getLocalTime: getLocalTime
+        getLocalTime: getLocalTime,
+        title: "友情's 笔记"
       });
     });
   });
@@ -177,7 +179,8 @@
         note: result.findNote,
         getLocalTime: getLocalTime,
         recentNote: result.recentNote,
-        tags: result.getTags.tags
+        tags: result.getTags.tags,
+        title: result.findNote.title
       });
     });
   });
@@ -225,7 +228,8 @@
         notes: result.findNotes,
         tag: tag,
         getLocalTime: getLocalTime,
-        tags: result.getTags.tags
+        tags: result.getTags.tags,
+        title: "Tags " + tag
       });
     });
   });
@@ -268,8 +272,9 @@
               return console.log(eachErr);
             }
             return res.render('archive', {
-              'archive': archive,
-              getLocalTime: getLocalTime
+              archive: archive,
+              getLocalTime: getLocalTime,
+              title: "Archive List"
             });
           });
         }

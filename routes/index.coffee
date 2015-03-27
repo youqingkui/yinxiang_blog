@@ -58,6 +58,7 @@ router.get '/', (req, res, next) ->
       getLocalTime:getLocalTime
       recentNote:result.getRecentNote
       tags:result.getTags.tags
+      title:"友情's 笔记"
     }
 
 ### 分页获取 ###
@@ -86,6 +87,7 @@ router.get '/page/:page', (req, res) ->
         currPage:page
         countPage:count
         getLocalTime:getLocalTime
+        title:"友情's 笔记"
       }
 
 ### 查找对应笔记 ###
@@ -120,6 +122,7 @@ router.get '/note/:noteGuid', (req, res) ->
         getLocalTime:getLocalTime,
         recentNote:result.recentNote
         tags:result.getTags.tags
+        title:result.findNote.title
       }
 
 ### 查找对应标签笔记列表 ###
@@ -147,6 +150,7 @@ router.get '/tag/:tag/', (req, res, next) ->
         tag:tag
         getLocalTime:getLocalTime
         tags:result.getTags.tags
+        title:"Tags #{tag}"
 
       }
 
@@ -174,7 +178,12 @@ router.get '/archive', (req, res) ->
 
       ,(eachErr) ->
         return console.log eachErr if eachErr
-        return res.render 'archive', {'archive':archive, getLocalTime:getLocalTime}
+        return res.render 'archive', {
+          archive:archive
+          getLocalTime:getLocalTime
+          title:"Archive List"
+
+        }
 
     ]
 
