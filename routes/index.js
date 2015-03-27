@@ -282,89 +282,23 @@
     });
   });
 
-  router.get('/get_note_tag', function(req, res) {
-    return async.auto({
-      getNote: function(cb) {
-        return Note.find(function(err, notes) {
-          if (err) {
-            return console.log(err);
-          }
-          return cb(null, notes);
-        });
-      },
-      getTagName: [
-        'getNote', function(cb, result) {
-          var notes;
-          notes = result.getNote;
-          return async.eachSeries(notes, function(item, callback) {
-            return noteStore.getNoteTagNames(item.guid, function(err, tags) {
-              if (err) {
-                return console.log(err);
-              }
-              item.tags = tags;
-              return item.save(function(err, note) {
-                if (err) {
-                  return console.log(err);
-                }
-                return callback();
-              });
-            });
-          }, function(eachErr) {
-            if (eachErr) {
-              return console.log(eachErr);
-            }
-            return res.send("get tag ok");
-          });
-        }
-      ]
-    });
-  });
-
-  router.get('/create_tags', function(req, res) {
-    return Note.find({}, {
-      'tags': 1
-    }).exec(function(err, notes) {
-      var note, t, tags, _i, _j, _len, _len1, _ref;
-      if (err) {
-        return console.log(err);
-      }
-      tags = [];
-      for (_i = 0, _len = notes.length; _i < _len; _i++) {
-        note = notes[_i];
-        _ref = note.tags;
-        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-          t = _ref[_j];
-          tags.push(t);
-        }
-      }
-      tags = uniq(tags);
-      return Tags.findOne(function(err, info) {
-        var newTag;
-        if (err) {
-          return console.log(err);
-        }
-        if (!info) {
-          newTag = new Tags();
-          newTag.tags = tags;
-          return newTag.save(function(err, row) {
-            if (err) {
-              return console.log(err);
-            }
-            console.log("ok save tages", row);
-            return res.send("create_tags ok");
-          });
-        } else {
-          return res.send("tags already exits");
-        }
-      });
-    });
-  });
-
   router.get('/sync', function(req, res) {
     var sync;
     sync = new Sync();
     return async.series([
       function(cb) {
+        return sync.checkStatus(function(err) {
+          if (err) {
+            return cb(err);
+          }
+          console.log("sync.needSync", sync.needSync);
+          if (sync.needSync === false) {
+            return res.send("status not change don't need sync");
+          } else {
+            return cb();
+          }
+        });
+      }, function(cb) {
         return sync.getNoteCount(function(err) {
           if (err) {
             return cb(err);

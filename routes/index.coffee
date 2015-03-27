@@ -188,64 +188,19 @@ router.get '/archive', (req, res) ->
     ]
 
 
-router.get '/get_note_tag', (req, res) ->
-  async.auto
-    getNote:(cb) ->
-      Note.find (err, notes) ->
-        return console.log err if err
-        cb(null, notes)
-
-    getTagName:['getNote', (cb, result) ->
-      notes = result.getNote
-      async.eachSeries notes, (item, callback) ->
-        noteStore.getNoteTagNames item.guid, (err, tags) ->
-          return console.log err if err
-          item.tags = tags
-          item.save (err, note) ->
-            return console.log err if err
-            callback()
-
-      ,(eachErr) ->
-        return console.log eachErr if eachErr
-        res.send("get tag ok")
-    ]
-
-
-router.get '/create_tags', (req, res) ->
-  Note.find({}, 'tags':1).exec (err, notes) ->
-    return console.log err if err
-    tags = []
-    for note in notes
-      for t in note.tags
-        tags.push t
-
-    tags = uniq(tags)
-    Tags.findOne (err, info) ->
-      return console.log err if err
-
-      if not info
-        newTag = new Tags()
-        newTag.tags = tags
-        newTag.save (err, row) ->
-          return console.log err if err
-          console.log "ok save tages", row
-          return res.send("create_tags ok")
-
-      else
-        return res.send("tags already exits")
 
 
 router.get '/sync', (req, res) ->
   sync = new Sync()
   async.series [
-#      (cb) ->
-#        sync.checkStatus (err) ->
-#          return cb(err) if err
-#          console.log("sync.needSync", sync.needSync)
-#          if sync.needSync is false
-#            return res.send "status not change don't need sync"
-#          else
-#            cb()
+      (cb) ->
+        sync.checkStatus (err) ->
+          return cb(err) if err
+          console.log("sync.needSync", sync.needSync)
+          if sync.needSync is false
+            return res.send "status not change don't need sync"
+          else
+            cb()
       (cb) ->
         sync.getNoteCount (err) ->
           return cb(err) if err
@@ -270,6 +225,51 @@ router.get '/sync', (req, res) ->
     return console.log sErr if sErr
     res.send("sync new note ok")
 
+#router.get '/get_note_tag', (req, res) ->
+#  async.auto
+#    getNote:(cb) ->
+#      Note.find (err, notes) ->
+#        return console.log err if err
+#        cb(null, notes)
+#
+#    getTagName:['getNote', (cb, result) ->
+#      notes = result.getNote
+#      async.eachSeries notes, (item, callback) ->
+#        noteStore.getNoteTagNames item.guid, (err, tags) ->
+#          return console.log err if err
+#          item.tags = tags
+#          item.save (err, note) ->
+#            return console.log err if err
+#            callback()
+#
+#      ,(eachErr) ->
+#        return console.log eachErr if eachErr
+#        res.send("get tag ok")
+#    ]
+#
+#
+#router.get '/create_tags', (req, res) ->
+#  Note.find({}, 'tags':1).exec (err, notes) ->
+#    return console.log err if err
+#    tags = []
+#    for note in notes
+#      for t in note.tags
+#        tags.push t
+#
+#    tags = uniq(tags)
+#    Tags.findOne (err, info) ->
+#      return console.log err if err
+#
+#      if not info
+#        newTag = new Tags()
+#        newTag.tags = tags
+#        newTag.save (err, row) ->
+#          return console.log err if err
+#          console.log "ok save tages", row
+#          return res.send("create_tags ok")
+#
+#      else
+#        return res.send("tags already exits")
 
 
 #router.get '/notebooks', (req, res) ->
