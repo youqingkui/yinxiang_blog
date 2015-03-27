@@ -11,7 +11,7 @@ Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
 
-SyncNewNote = require('../servers/sync_simple')
+Sync = require('../servers/sync')
 help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
@@ -19,7 +19,6 @@ toInt = help.toInt
 
 
 ### GET home page. ###
-
 router.get '/', (req, res, next) ->
   page = toInt(req.param('page'))
   page = 1 if page <= 0 or not page
@@ -29,15 +28,12 @@ router.get '/', (req, res, next) ->
       Note.count (err, number) ->
         if err
           return console.log err
-        console.log "count note ==>", number
         count = Math.ceil number / 10
-        console.log "1"
         cb()
 
     pageNote:(cb) ->
       Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
         return console.log err if err
-        console.log "2"
         cb(null, notes)
 
     getRecentNote:(cb) ->
@@ -55,7 +51,6 @@ router.get '/', (req, res, next) ->
 
   ,(err, result) ->
     return console.log err if err
-    console.log result.getTags
     return res.render 'index', {
       notes:result.pageNote
       currPage:page
@@ -65,7 +60,7 @@ router.get '/', (req, res, next) ->
       tags:result.getTags.tags
     }
 
-
+### 分页获取 ###
 router.get '/page/:page', (req, res) ->
   page = toInt(req.params.page)
   page = 1 if page <= 0
@@ -77,18 +72,15 @@ router.get '/page/:page', (req, res) ->
           return console.log err
         console.log "count note ==>", number
         count = Math.ceil number / 10
-        console.log "1"
         cb()
 
     pageNote:(cb) ->
       Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
         return console.log err if err
-        console.log "2"
         cb(null, notes)
 
   ,(err, result) ->
       return console.log err if err
-      console.log getLocalTime(123333)
       return res.render 'index', {
         notes:result.pageNote
         currPage:page
@@ -96,7 +88,7 @@ router.get '/page/:page', (req, res) ->
         getLocalTime:getLocalTime
       }
 
-
+### 查找对应笔记 ###
 router.get '/note/:noteGuid', (req, res) ->
   noteGuid = req.params.noteGuid
   async.auto
@@ -123,7 +115,6 @@ router.get '/note/:noteGuid', (req, res) ->
 
   ,(autoErr, result) ->
       return console.log autoErr if autoErr
-      console.log result.getTags
       return res.render 'note', {
         note:result.findNote,
         getLocalTime:getLocalTime,
@@ -131,7 +122,7 @@ router.get '/note/:noteGuid', (req, res) ->
         tags:result.getTags.tags
       }
 
-
+### 查找对应标签笔记列表 ###
 router.get '/tag/:tag/', (req, res, next) ->
   tag = req.params.tag.trim()
   query = "this.tags.indexOf('#{tag}') > -1"
@@ -159,7 +150,7 @@ router.get '/tag/:tag/', (req, res, next) ->
 
       }
 
-
+### 档案 ###
 router.get '/archive', (req, res) ->
   async.auto
     getNotes:(cb) ->
@@ -183,7 +174,6 @@ router.get '/archive', (req, res) ->
 
       ,(eachErr) ->
         return console.log eachErr if eachErr
-        console.log archive
         return res.render 'archive', {'archive':archive, getLocalTime:getLocalTime}
 
     ]
@@ -194,7 +184,6 @@ router.get '/get_note_tag', (req, res) ->
     getNote:(cb) ->
       Note.find (err, notes) ->
         return console.log err if err
-
         cb(null, notes)
 
     getTagName:['getNote', (cb, result) ->
@@ -205,7 +194,6 @@ router.get '/get_note_tag', (req, res) ->
           item.tags = tags
           item.save (err, note) ->
             return console.log err if err
-            console.log "#{note.title} tag ==> #{tags}"
             callback()
 
       ,(eachErr) ->
@@ -235,12 +223,11 @@ router.get '/create_tags', (req, res) ->
           return res.send("create_tags ok")
 
       else
-        console.log "tag has"
         return res.send("tags already exits")
 
 
-router.get '/new_note', (req, res) ->
-  sync = new SyncNewNote()
+router.get '/sync', (req, res) ->
+  sync = new Sync()
   async.series [
 #      (cb) ->
 #        sync.checkStatus (err) ->
@@ -265,9 +252,12 @@ router.get '/new_note', (req, res) ->
         ,(eachErr) ->
           return cb(eachErr) if eachErr
           cb()
+      (cb) ->
+        sync.updateNoteBookTags (err) ->
+          return cb(err) if err
+          cb()
     ]
   ,(sErr) ->
-    console.log "here"
     return console.log sErr if sErr
     res.send("sync new note ok")
 
@@ -384,14 +374,14 @@ router.get '/new_note', (req, res) ->
 #    console.log note
 #
 #
-#router.get '/test_tag', (req, res) ->
-#  guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce'
-#  noteStore.getNoteTagNames guid, (err, tag) ->
-#    if err
-#      return console.log err
-#
-#    console.log tag
-#
+router.get '/test_tag', (req, res) ->
+  guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce'
+  noteStore.getNoteTagNames guid, (err, tag) ->
+    if err
+      return console.log err
+
+    console.log tag
+
 #  noteStore.listTagsByNotebook 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406', (err, tags) ->
 #    return console.log err if err
 #    console.log tags
@@ -490,10 +480,10 @@ router.get '/new_note', (req, res) ->
 #        return res.send "no need syncs"
 #    ]
 
-router.get '/status', (req, res) ->
-  noteStore.getSyncState (err, info) ->
-    return console.log err if err
-    console.log info
+#router.get '/status', (req, res) ->
+#  noteStore.getSyncState (err, info) ->
+#    return console.log err if err
+#    console.log info
 
 
 module.exports = router

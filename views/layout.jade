@@ -2,9 +2,16 @@ doctype html
 html
   head
     title= title
-    //link(rel='styleSheet', href='/lib/bootstrap/css/bootstrap.min.css')
+    meta(name='viewport', content='width=device-width; initial-scale=1; maximum-scale=1')
+    meta(name='description', content='友情的EverNote笔记')
+    meta(name='keywords', content='Node,Python,JavaScript')
+    meta(name='author', content='youqingkui@foxmail')
     link(rel='styleSheet', href='/lib/fabox/font-awesome.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    //if lt IE 9
+      script(type='text/javascript', src='html5shim.googlecode.com/svn/trunk/html5.js')
+
+
     block header
 
   body
