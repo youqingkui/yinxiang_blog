@@ -246,7 +246,9 @@ Sync::createNote = (simpleInfo, cb) ->
     self.getNoteContent note, (gErr, newNote) ->
       return cb(gErr) if gErr
       console.log "新笔记 #{newNote.title} 获取内容成功"
-      cb(null, newNote)
+      self.updateNoteTagName newNote, (uErr, upNote) ->
+        return cb(uErr) if uErr
+        cb(null, upNote)
 
 ### 获取笔记内容 ###
 Sync::getNoteContent = (note, cb) ->

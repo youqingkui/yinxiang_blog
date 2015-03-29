@@ -380,7 +380,12 @@
           return cb(gErr);
         }
         console.log("新笔记 " + newNote.title + " 获取内容成功");
-        return cb(null, newNote);
+        return self.updateNoteTagName(newNote, function(uErr, upNote) {
+          if (uErr) {
+            return cb(uErr);
+          }
+          return cb(null, upNote);
+        });
       });
     });
   };
