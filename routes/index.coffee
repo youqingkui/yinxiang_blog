@@ -16,6 +16,7 @@ help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
 toInt = help.toInt
+hexdump = require('hexdump-nodejs')
 
 
 ### GET home page. ###
@@ -494,5 +495,23 @@ router.get '/test_tag', (req, res) ->
 #    return console.log err if err
 #    console.log info
 
+router.get '/res', (req, res) ->
+  noteStore.getNote 'c47386e3-b9c3-4964-8dfe-c77f8b2af594', false, false, false,false, (err, info) ->
+    return console.log err if err
+    res.send info
+
+router.get '/res2', (req, res) ->
+  noteStore.getResource 'c41e5d85-a39c-4d72-ad40-345da51f4a15', true, false, false, false, (err, info) ->
+    return console.log err if err
+    res.send info
+
+router.get '/hash', (req, res) ->
+  hash = new Buffer('2d20b436386e316e446c857f37043ada', 'hex')
+  console.log hash
+  noteStore.getResourceByHash '2d7cd66f-110f-40a2-9d59-e20b13e072a7', (hash.encode_utf8()), true, false, false, (err, data) ->
+    if err
+      return console.log err
+
+    console.log data
 
 module.exports = router

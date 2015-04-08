@@ -10,6 +10,7 @@ noteSchema = mongoose.Schema
   deleted:Boolean
   tagGuids:Array
   notebookGuid:String
+  htmlContent:String
   tags:Array
 
 noteSchema.methods.findSameGuid = (cb) ->

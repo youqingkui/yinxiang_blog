@@ -15,6 +15,7 @@
     deleted: Boolean,
     tagGuids: Array,
     notebookGuid: String,
+    htmlContent: String,
     tags: Array
   });
 
