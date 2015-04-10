@@ -27,7 +27,7 @@ block content
                   = getLocalTime(note.updated/1000)
 
 
-        .entry!= note.content
+        .entry!= note.htmlContent
         div#fb_comments_container
           #disqus_thread
           script(type='text/javascript').

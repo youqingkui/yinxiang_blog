@@ -12,6 +12,7 @@ Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
 
 Sync = require('../servers/sync')
+Sync2 = require('../servers/sync2')
 help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
@@ -495,23 +496,52 @@ router.get '/test_tag', (req, res) ->
 #    return console.log err if err
 #    console.log info
 
-router.get '/res', (req, res) ->
-  noteStore.getNote 'c47386e3-b9c3-4964-8dfe-c77f8b2af594', false, false, false,false, (err, info) ->
+#router.get '/res', (req, res) ->
+#  noteStore.getNote 'c47386e3-b9c3-4964-8dfe-c77f8b2af594', false, false, false,false, (err, info) ->
+#    return console.log err if err
+#    res.send info
+#
+#router.get '/res2', (req, res) ->
+#  noteStore.getResource 'c41e5d85-a39c-4d72-ad40-345da51f4a15', true, false, false, false, (err, info) ->
+#    return console.log err if err
+#    res.send info
+#
+#router.get '/hash', (req, res) ->
+#  hash = new Buffer('2d20b436386e316e446c857f37043ada', 'hex')
+#  console.log hash
+#  noteStore.getResourceByHash '2d7cd66f-110f-40a2-9d59-e20b13e072a7', (hash.encode_utf8()), true, false, false, (err, data) ->
+#    if err
+#      return console.log err
+#
+#    console.log data
+
+router.get '/test1', (req, res) ->
+  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
+  guid2 = '225d9cfe-30e7-44e3-a4db-2ebc2575be58'
+  filterNote = new Evernote.NoteFilter()
+  filterNote.notebookGuid = guid2
+
+  reParams = new Evernote.NotesMetadataResultSpec()
+  reParams.includeTitle = true
+  reParams.includeCreated = true
+  reParams.includeUpdated = true
+  reParams.includeDeleted = true
+  reParams.includeTagGuids = true
+  reParams.includeNotebookGuid = true
+  reParams.includeTagGuids = true
+  noteStore.findNotesMetadata filterNote, 0, 500, reParams, (err, info) ->
     return console.log err if err
-    res.send info
 
-router.get '/res2', (req, res) ->
-  noteStore.getResource 'c41e5d85-a39c-4d72-ad40-345da51f4a15', true, false, false, false, (err, info) ->
-    return console.log err if err
-    res.send info
+    console.log info
+    console.log info.notes.length
 
-router.get '/hash', (req, res) ->
-  hash = new Buffer('2d20b436386e316e446c857f37043ada', 'hex')
-  console.log hash
-  noteStore.getResourceByHash '2d7cd66f-110f-40a2-9d59-e20b13e072a7', (hash.encode_utf8()), true, false, false, (err, data) ->
-    if err
-      return console.log err
+#  noteStore.listNotebooks (err, info) ->
+#    console.log info
+#    res.send info
 
-    console.log data
+
+router.get '/test2', (req, res) ->
+  sync = new Sync2()
+  sync.syncInfo()
 
 module.exports = router
