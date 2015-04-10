@@ -35,23 +35,18 @@ class sync
     @reParams.includeTagGuids = true
     @reParams.includeNotebookGuid = true
 
-#  getPageCount: (cb) ->
-#    self = @
-#    noteStore.findNoteCounts @filterNote, false, (err, Info) ->
-#      return cb(err) if err
-#
-#      countNoteNum = info.notebookCounts[self.guid]
-#      page = Math.ceil(countNoteNum / 50)
-#      cb(null, page)
+
 
   syncInfo: (cb) ->
     self = @
 
     async.auto
       getNote:(callback) ->
-        noteStore.findNotesMetadata self.filterNote, 0, 100,self.reParams, (err, info) ->
+        noteStore.findNotesMetadata self.filterNote, 0, 100,
+        self.reParams, (err, info) ->
           return cb(err) if err
-
+          console.log info.totalNotes
+          console.log info.notes.length
           callback(null, info)
 
 
@@ -61,50 +56,47 @@ class sync
           Note.findOne {guid:item.guid}, (err, note) ->
             return c1(err) if err
 
-            if not note
-              cggc = async.compose(
-                self.changeImgHtml,self.getTagName,
-                self.getContent,self.createNote)
-              cggc item, (err2, res2) ->
-                return c1(err2) if err2
+            self.composeDo item, note, (err2) ->
+              return c1(err2) if err2
 
-                c1()
-
-            else
-              cggu = async.compose(
-                self.changeImgHtml, self.getTagName,
-                self.getContent, self.upbaseInfo
-              )
-              cggu note, item, (err3, res3) ->
-                return c1(err3) if err3
-
-                c1()
+              c1()
 
         ,(eachErr) ->
           console.log eachErr
           return cb(eachErr) if eachErr
 
-          console.log "all dooo"
+          callback()
+      ]
 
+      upNoteBookTag:['upNote', (callback) ->
+        self.compleNoteBooksTag (err) ->
+          return callback(err) if err
+
+          return "all ok!!"
+          callback()
       ]
 
 
-#  upNoteInfo: (item, cb) ->
-#    self = @
-#    async.auto
-#      findNote:(callback) ->
-#        Note.findOne guid:item.guid, (err, note) ->
-#          return callback(err) if err
-#
-#          cb(null, note)
-#
-#      composeUp:(callback, result) ->
-#        note = result.findNote
-#        if not note
-#          cggc = async.compose(
-#            self.changeImgHtml,self.getTagName,
-#                  self.getContent,self.createNote)
-#          cggc note
+  composeDo: (item, note, cb) ->
+    self = @
+
+    if not note
+      cggc = async.compose(
+        self.changeImgHtml,self.getTagName,
+        self.getContent,self.createNote)
+      cggc item, (err2, res2) ->
+        return cb(err2) if err2
+
+        cb()
+
+    else
+      cggu = async.compose(
+        self.changeImgHtml, self.getTagName,
+        self.getContent, self.upbaseInfo)
+      cggu note, item, (err3, res3) ->
+        return cb(err3) if err3
+
+        cb()
 
 
 
@@ -164,7 +156,6 @@ class sync
         callback()
 
     ,(eachErr) ->
-      console.log eachErr
       return cb(eachErr) if eachErr
 
       note.htmlContent = $.html()
@@ -172,6 +163,17 @@ class sync
         return cb(sErr) if sErr
 
         cb(null, row)
+
+
+  compleNoteBooksTag: (cb) ->
+    sgg = async.compose(saveTags,getTagStr,getAllNoteTag)
+    sgg (err, res) ->
+      return cb(err) if err
+
+      cb()
+
+
+
 
 getImgRes = (hashStr, minmeType, noteGuid, cb) ->
   pyFile = __dirname + '/test.py'
@@ -186,49 +188,48 @@ getImgRes = (hashStr, minmeType, noteGuid, cb) ->
     cb()
 
 
+getAllNoteTag = (callback) ->
+  Note.find {}, 'tags':1, (err, tags) ->
+    return cb(err) if err
 
+    console.log "getAllNoteTag ==>", tags
+    callback(null, tags)
 
+getTagStr = (tagArr, cb) ->
+  tags = []
+  async.eachSeries tagArr, (item, callback) ->
+    for t in item.tags
+      tags.push t
 
+    callback()
 
+  ,(eachErr) ->
+    return cb(eachErr) if eachErr
+    console.log "getTagStr ==>", tags
+    cb(null, tags)
+
+saveTags = (tags, cb) ->
+  tags = uniq tags
+  console.log "saveTags ==>", tags
+  Tags.findOne (err, dbTags) ->
+    return cb(err) if err
+
+    if dbTags
+      dbTags.tags = tags
+      dbTags.syncStatus = Date.parse(new Date())
+    else
+      dbTags = new Tags()
+      dbTags.tags = tags
+      dbTags.syncStatus = Date.parse(new Date())
+
+    dbTags.save (err1, row) ->
+      return cb(err1) if err1
+
+      cb(null, row)
 
 
 
 module.exports = sync
-
-
-
-
-
-
-
-
-
-
-
-
-
-#class CreateNote
-#  constructor: (@noteInfo) ->
-#
-#  save: (cb) ->
-#    newNote = new Note()
-#    newNote.guid = @noteInfo.guid
-#    newNote.title = @noteInfo.title
-#    newNote.content = @noteInfo.content
-#    newNote.created = @noteInfo.created
-#    newNote.updated = @noteInfo.updated
-#    newNote.tagGuids = @noteInfo.tagGuids
-#    newNote.notebookGuid = @noteInfo.notebookGuid
-#    newNote.save (err, row) ->
-#      return cb(err) if err
-#      cb(null, row)
-#
-#
-#class GetContent
-#  constructor: (@noteInfo) ->
-#    super
-#
-#  get: (cb) ->
 
 
 

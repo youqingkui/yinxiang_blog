@@ -385,6 +385,16 @@
     return sync.syncInfo();
   });
 
+  router.get('/test3', function(req, res) {
+    var sync;
+    sync = new Sync2();
+    return sync.compleNoteBooksTag(function(err) {
+      if (err) {
+        return console.log(err);
+      }
+    });
+  });
+
   module.exports = router;
 
 }).call(this);

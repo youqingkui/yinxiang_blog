@@ -544,4 +544,11 @@ router.get '/test2', (req, res) ->
   sync = new Sync2()
   sync.syncInfo()
 
+
+router.get '/test3', (req, res) ->
+  sync = new Sync2()
+  sync.compleNoteBooksTag (err) ->
+    return console.log err if err
+
+
 module.exports = router
