@@ -356,43 +356,10 @@
     });
   });
 
-  router.get('/test1', function(req, res) {
-    var filterNote, guid, guid2, reParams;
-    guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406';
-    guid2 = '225d9cfe-30e7-44e3-a4db-2ebc2575be58';
-    filterNote = new Evernote.NoteFilter();
-    filterNote.notebookGuid = guid2;
-    reParams = new Evernote.NotesMetadataResultSpec();
-    reParams.includeTitle = true;
-    reParams.includeCreated = true;
-    reParams.includeUpdated = true;
-    reParams.includeDeleted = true;
-    reParams.includeTagGuids = true;
-    reParams.includeNotebookGuid = true;
-    reParams.includeTagGuids = true;
-    return noteStore.findNotesMetadata(filterNote, 0, 500, reParams, function(err, info) {
-      if (err) {
-        return console.log(err);
-      }
-      console.log(info);
-      return console.log(info.notes.length);
-    });
-  });
-
-  router.get('/test2', function(req, res) {
+  router.get('/sync2', function(req, res) {
     var sync;
     sync = new Sync2();
     return sync.syncInfo(function(err) {
-      if (err) {
-        return console.log(err);
-      }
-    });
-  });
-
-  router.get('/test3', function(req, res) {
-    var sync;
-    sync = new Sync2();
-    return sync.compleNoteBooksTag(function(err) {
       if (err) {
         return console.log(err);
       }

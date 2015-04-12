@@ -515,42 +515,42 @@ router.get '/test_tag', (req, res) ->
 #
 #    console.log data
 
-router.get '/test1', (req, res) ->
-  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
-  guid2 = '225d9cfe-30e7-44e3-a4db-2ebc2575be58'
-  filterNote = new Evernote.NoteFilter()
-  filterNote.notebookGuid = guid2
-
-  reParams = new Evernote.NotesMetadataResultSpec()
-  reParams.includeTitle = true
-  reParams.includeCreated = true
-  reParams.includeUpdated = true
-  reParams.includeDeleted = true
-  reParams.includeTagGuids = true
-  reParams.includeNotebookGuid = true
-  reParams.includeTagGuids = true
-  noteStore.findNotesMetadata filterNote, 0, 500, reParams, (err, info) ->
-    return console.log err if err
-
-    console.log info
-    console.log info.notes.length
+#router.get '/test1', (req, res) ->
+#  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
+#  guid2 = '225d9cfe-30e7-44e3-a4db-2ebc2575be58'
+#  filterNote = new Evernote.NoteFilter()
+#  filterNote.notebookGuid = guid2
+#
+#  reParams = new Evernote.NotesMetadataResultSpec()
+#  reParams.includeTitle = true
+#  reParams.includeCreated = true
+#  reParams.includeUpdated = true
+#  reParams.includeDeleted = true
+#  reParams.includeTagGuids = true
+#  reParams.includeNotebookGuid = true
+#  reParams.includeTagGuids = true
+#  noteStore.findNotesMetadata filterNote, 0, 500, reParams, (err, info) ->
+#    return console.log err if err
+#
+#    console.log info
+#    console.log info.notes.length
 
 #  noteStore.listNotebooks (err, info) ->
 #    console.log info
 #    res.send info
 
 
-router.get '/test2', (req, res) ->
+router.get '/sync2', (req, res) ->
   sync = new Sync2()
   sync.syncInfo (err) ->
     if err
       return console.log err
 
-
-router.get '/test3', (req, res) ->
-  sync = new Sync2()
-  sync.compleNoteBooksTag (err) ->
-    return console.log err if err
+#
+#router.get '/test3', (req, res) ->
+#  sync = new Sync2()
+#  sync.compleNoteBooksTag (err) ->
+#    return console.log err if err
 
 
 module.exports = router

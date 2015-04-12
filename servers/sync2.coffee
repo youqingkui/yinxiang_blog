@@ -19,7 +19,7 @@ MIME_TO_EXTESION_MAPPING = {
 }
 
 
-class sync
+class Sync
   constructor: () ->
     # 设置查找过滤的笔记本
     @guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
@@ -38,6 +38,7 @@ class sync
 
 
   syncInfo: (cb) ->
+    ### 同步 ###
     self = @
 
     async.auto
@@ -78,6 +79,7 @@ class sync
 
 
   composeDo: (item, note, cb) ->
+    ### 集合操作 ###
     self = @
 
     if not note
@@ -102,6 +104,7 @@ class sync
 
 
   createNote: (noteInfo, self, cb) ->
+    ### 创建 ###
     newNote = new Note()
     newNote.guid = noteInfo.guid
     newNote.title = noteInfo.title
@@ -115,6 +118,7 @@ class sync
 
 
   getContent: (note, self, cb) ->
+    ### 获取内容 ###
 #    self = @
 #    console.log self
     noteStore.getNoteContent note.guid, (err, content) ->
@@ -130,6 +134,7 @@ class sync
 
 
   getTagName: (note, self, cb) ->
+    ### 获取标签名 ###
     noteStore.getNoteTagNames note.guid, (err, tagsName) ->
       return cb(err) if err
 
@@ -139,6 +144,7 @@ class sync
 
 
   upbaseInfo: (note, upInfo, self, cb) ->
+    ### 更新基本信息 ###
 #    console.log upInfo
     for v, k of upInfo
       if v of note
@@ -150,6 +156,7 @@ class sync
     cb(null, note, self)
 
   changeImgHtml:(note, cb) ->
+    ### 替换Img标签和下载资源 ###
     console.log "changeImgHtml ==>", note.title
     $ = cheerio.load(note.content)
     all_media = $('en-media')
@@ -175,11 +182,49 @@ class sync
 
 
   compleNoteBooksTag: (cb) ->
+    ### 更新标签 ###
     sgg = async.compose(saveTags,getTagStr,getAllNoteTag)
     sgg (err, res) ->
       return cb(err) if err
 
       cb()
+
+  compleSyncStatus: (cb) ->
+    ### 检查是否需要同步 ###
+  
+    getDbStatus = (callback) ->
+      SyncStatus.findOne (err, row) ->
+        return callback(err) if err
+
+        callback(null, row)
+
+    getServerStatus = (dbStatus, callback) ->
+      noteStore.getSyncState (err, info) ->
+        return callback(err) if err
+
+        cb(null, dbStatus, info)
+
+    compleStatus = (dbStatus, serverStatus, callback) ->
+      needUp = false
+      if not dbStatus
+        dbStatus = new SyncState()
+
+      if dbStatus.updateCount != serverStatus.updateCount
+        needUp = true
+        for k, v of serverStatus
+          dbStatus[k] = v
+
+      dbStatus.save (err, row) ->
+        return callback (err) if err
+
+        cb(null, needUp)
+
+
+    cgg = async.compose(compleStatus, getServerStatus, getDbStatus)
+    cgg (err, result) ->
+      return cb(err) if err
+
+      cb(null, result)
 
 
 
@@ -238,7 +283,7 @@ saveTags = (tags, cb) ->
 
 
 
-module.exports = sync
+module.exports = Sync
 
 
 
