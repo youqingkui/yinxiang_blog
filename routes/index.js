@@ -382,7 +382,11 @@
   router.get('/test2', function(req, res) {
     var sync;
     sync = new Sync2();
-    return sync.syncInfo();
+    return sync.syncInfo(function(err) {
+      if (err) {
+        return console.log(err);
+      }
+    });
   });
 
   router.get('/test3', function(req, res) {

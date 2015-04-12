@@ -133,9 +133,13 @@ class sync
 
 
   upbaseInfo: (note, upInfo, cb) ->
-
+#    console.log upInfo
     for v, k of upInfo
-      note[k] = v
+#      console.log(note.hasOwnProperty v)
+      if note.hasOwnProperty v
+        note[v] = k
+        console.log "k ==>", k
+        console.log "v ==>", v
 
     console.log "upbaseInfo ==>", note.title
     cb(null, note)

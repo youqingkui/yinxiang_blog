@@ -167,7 +167,11 @@
       var k, v;
       for (v in upInfo) {
         k = upInfo[v];
-        note[k] = v;
+        if (note.hasOwnProperty(v)) {
+          note[v] = k;
+          console.log("k ==>", k);
+          console.log("v ==>", v);
+        }
       }
       console.log("upbaseInfo ==>", note.title);
       return cb(null, note);

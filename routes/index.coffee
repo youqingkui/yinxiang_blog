@@ -542,7 +542,9 @@ router.get '/test1', (req, res) ->
 
 router.get '/test2', (req, res) ->
   sync = new Sync2()
-  sync.syncInfo()
+  sync.syncInfo (err) ->
+    if err
+      return console.log err
 
 
 router.get '/test3', (req, res) ->
