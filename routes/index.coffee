@@ -17,7 +17,7 @@ help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
 toInt = help.toInt
-hexdump = require('hexdump-nodejs')
+#hexdump = require('hexdump-nodejs')
 
 
 ### GET home page. ###
