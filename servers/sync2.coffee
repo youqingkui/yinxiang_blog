@@ -234,7 +234,7 @@ class Sync
 getImgRes = (hashStr, minmeType, noteGuid, cb) ->
   pyFile = __dirname + '/test.py'
   console.log pyFile
-  exec "python #{pyFile} " + hashStr + ' ' + noteGuid, {maxBuffer: 1024 * 50000},
+  exec "python #{pyFile} " + hashStr + ' ' + noteGuid, {maxBuffer: 1024 * 5000000},
   (err, stdout, stderr) ->
     return cb(err) if err
 

@@ -299,7 +299,7 @@
     pyFile = __dirname + '/test.py';
     console.log(pyFile);
     return exec(("python " + pyFile + " ") + hashStr + ' ' + noteGuid, {
-      maxBuffer: 1024 * 50000
+      maxBuffer: 1024 * 5000000
     }, function(err, stdout, stderr) {
       var img, writeRes;
       if (err) {
