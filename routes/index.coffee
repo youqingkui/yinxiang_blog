@@ -227,6 +227,30 @@ router.get '/sync', (req, res) ->
     return console.log sErr if sErr
     res.send("sync new note ok")
 
+
+router.get '/sync2', (req, res) ->
+  sync = new Sync2()
+
+  async.auto
+    checkStatus:(cb) ->
+      sync.compleSyncStatus (err, result) ->
+        if err
+          return console.log err
+
+        if result is false
+          cb()
+        else
+          return res.send "don't need update"
+
+    syncInfo: ['checkStatus', (cb) ->
+      sync.syncInfo (err) ->
+        if err
+          return console.log err
+
+        return console.log "sync all do"
+    ]
+
+
 #router.get '/get_note_tag', (req, res) ->
 #  async.auto
 #    getNote:(cb) ->
@@ -385,13 +409,13 @@ router.get '/sync', (req, res) ->
 #    console.log note
 #
 #
-router.get '/test_tag', (req, res) ->
-  guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce'
-  noteStore.getNoteTagNames guid, (err, tag) ->
-    if err
-      return console.log err
-
-    console.log tag
+#router.get '/test_tag', (req, res) ->
+#  guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce'
+#  noteStore.getNoteTagNames guid, (err, tag) ->
+#    if err
+#      return console.log err
+#
+#    console.log tag
 
 #  noteStore.listTagsByNotebook 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406', (err, tags) ->
 #    return console.log err if err
@@ -540,11 +564,14 @@ router.get '/test_tag', (req, res) ->
 #    res.send info
 
 
-router.get '/sync2', (req, res) ->
-  sync = new Sync2()
-  sync.syncInfo (err) ->
-    if err
-      return console.log err
+
+
+
+
+
+#  sync.syncInfo (err) ->
+#    if err
+#      return console.log err
 
 #
 #router.get '/test3', (req, res) ->

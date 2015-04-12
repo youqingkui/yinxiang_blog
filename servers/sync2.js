@@ -247,6 +247,7 @@
           if (err) {
             return callback(err);
           }
+          console.log("getDbStatus ==>", row);
           return callback(null, row);
         });
       };
@@ -255,7 +256,8 @@
           if (err) {
             return callback(err);
           }
-          return cb(null, dbStatus, info);
+          console.log("getServerStatus ==>", info);
+          return callback(null, dbStatus, info);
         });
       };
       compleStatus = function(dbStatus, serverStatus, callback) {
@@ -264,6 +266,7 @@
         if (!dbStatus) {
           dbStatus = new SyncState();
         }
+        console.log(dbStatus.updateCount !== serverStatus.updateCount);
         if (dbStatus.updateCount !== serverStatus.updateCount) {
           needUp = true;
           for (k in serverStatus) {

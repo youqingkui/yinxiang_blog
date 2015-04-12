@@ -345,24 +345,32 @@
     });
   });
 
-  router.get('/test_tag', function(req, res) {
-    var guid;
-    guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce';
-    return noteStore.getNoteTagNames(guid, function(err, tag) {
-      if (err) {
-        return console.log(err);
-      }
-      return console.log(tag);
-    });
-  });
-
   router.get('/sync2', function(req, res) {
     var sync;
     sync = new Sync2();
-    return sync.syncInfo(function(err) {
-      if (err) {
-        return console.log(err);
-      }
+    return async.auto({
+      checkStatus: function(cb) {
+        return sync.compleSyncStatus(function(err, result) {
+          if (err) {
+            return console.log(err);
+          }
+          if (result === false) {
+            return cb();
+          } else {
+            return res.send("don't need update");
+          }
+        });
+      },
+      syncInfo: [
+        'checkStatus', function(cb) {
+          return sync.syncInfo(function(err) {
+            if (err) {
+              return console.log(err);
+            }
+            return console.log("sync all do");
+          });
+        }
+      ]
     });
   });
 

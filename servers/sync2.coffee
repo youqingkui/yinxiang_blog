@@ -191,24 +191,26 @@ class Sync
 
   compleSyncStatus: (cb) ->
     ### 检查是否需要同步 ###
-  
+
     getDbStatus = (callback) ->
       SyncStatus.findOne (err, row) ->
         return callback(err) if err
 
+        console.log "getDbStatus ==>", row
         callback(null, row)
 
     getServerStatus = (dbStatus, callback) ->
       noteStore.getSyncState (err, info) ->
         return callback(err) if err
 
-        cb(null, dbStatus, info)
+        console.log "getServerStatus ==>", info
+        callback(null, dbStatus, info)
 
     compleStatus = (dbStatus, serverStatus, callback) ->
       needUp = false
       if not dbStatus
         dbStatus = new SyncState()
-
+      console.log dbStatus.updateCount != serverStatus.updateCount
       if dbStatus.updateCount != serverStatus.updateCount
         needUp = true
         for k, v of serverStatus
