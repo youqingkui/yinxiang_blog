@@ -305,9 +305,9 @@
       if (err) {
         return cb(err);
       }
-      writeRes = fs.createWriteStream('public/images/' + hashStr + MIME_TO_EXTESION_MAPPING[minmeType]);
+      writeRes = 'public/images/' + hashStr + MIME_TO_EXTESION_MAPPING[minmeType];
       img = new Buffer(stdout, 'base64');
-      writeRes.write(img);
+      fs.writeFileSync(writeRes, img);
       return cb();
     });
   };
