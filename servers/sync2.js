@@ -52,7 +52,7 @@
       self = this;
       return async.auto({
         getNote: function(callback) {
-          return noteStore.findNotesMetadata(self.filterNote, 0, 100, self.reParams, function(err, info) {
+          return noteStore.findNotesMetadata(self.filterNote, 0, 1, self.reParams, function(err, info) {
             if (err) {
               return cb(err);
             }
@@ -106,7 +106,7 @@
       var cggc, cggu, self;
       self = this;
       if (!note) {
-        cggc = async.compose(self.changeImgHtml, self.getTagName, self.getContent, self.createNote);
+        cggc = async.compose(self.getContent, self.getTagName, self.createNote);
         return cggc(item, function(err2, res2) {
           if (err2) {
             return cb(err2);
@@ -114,7 +114,7 @@
           return cb();
         });
       } else {
-        cggu = async.compose(self.changeImgHtml, self.getTagName, self.getContent, self.upbaseInfo);
+        cggu = async.compose(self.getContent, self.getTagName, self.upbaseInfo);
         return cggu(note, item, function(err3, res3) {
           if (err3) {
             return cb(err3);
@@ -138,15 +138,26 @@
     };
 
     sync.prototype.getContent = function(note, cb) {
+      var self;
+      self = this;
       return noteStore.getNoteContent(note.guid, function(err, content) {
         if (err) {
           return cb(err);
         }
+        console.log("getContent ==>", note.title);
         if (note.content !== content) {
           note.content = content;
+          if (true) {
+            return self.changeImgHtml(note, function(err1) {
+              if (err1) {
+                return cb(err1);
+              }
+              return cb(null, note);
+            });
+          }
+        } else {
+          return cb(null, note);
         }
-        console.log("getContent ==>", note.title);
-        return cb(null, note);
       });
     };
 
@@ -167,6 +178,7 @@
       var k, v;
       for (v in upInfo) {
         k = upInfo[v];
+        console.log(note.hasOwnProperty(v));
         if (note.hasOwnProperty(v)) {
           note[v] = k;
           console.log("k ==>", k);

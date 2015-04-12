@@ -42,7 +42,7 @@ class sync
 
     async.auto
       getNote:(callback) ->
-        noteStore.findNotesMetadata self.filterNote, 0, 100,
+        noteStore.findNotesMetadata self.filterNote, 0, 1,
         self.reParams, (err, info) ->
           return cb(err) if err
           console.log info.totalNotes
@@ -82,8 +82,8 @@ class sync
 
     if not note
       cggc = async.compose(
-        self.changeImgHtml,self.getTagName,
-        self.getContent,self.createNote)
+        self.getContent,self.getTagName,
+        self.createNote)
       cggc item, (err2, res2) ->
         return cb(err2) if err2
 
@@ -91,8 +91,8 @@ class sync
 
     else
       cggu = async.compose(
-        self.changeImgHtml, self.getTagName,
-        self.getContent, self.upbaseInfo)
+        self.getContent, self.getTagName,
+        self.upbaseInfo)
       cggu note, item, (err3, res3) ->
         return cb(err3) if err3
 
@@ -115,12 +115,21 @@ class sync
 
 
   getContent: (note, cb) ->
+    self = @
+
     noteStore.getNoteContent note.guid, (err, content) ->
       return cb(err) if err
 
-      note.content = content if note.content != content
       console.log "getContent ==>", note.title
-      cb(null, note)
+      if note.content != content
+        note.content = content
+        if true
+          self.changeImgHtml note, (err1) ->
+            return cb(err1) if err1
+
+            cb(null, note)
+      else
+        cb(null, note)
 
 
   getTagName: (note, cb) ->
@@ -135,7 +144,7 @@ class sync
   upbaseInfo: (note, upInfo, cb) ->
 #    console.log upInfo
     for v, k of upInfo
-#      console.log(note.hasOwnProperty v)
+      console.log(note.hasOwnProperty v)
       if note.hasOwnProperty v
         note[v] = k
         console.log "k ==>", k
