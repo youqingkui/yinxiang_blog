@@ -42,7 +42,7 @@ class sync
 
     async.auto
       getNote:(callback) ->
-        noteStore.findNotesMetadata self.filterNote, 0, 1,
+        noteStore.findNotesMetadata self.filterNote, 0, 100,
         self.reParams, (err, info) ->
           return cb(err) if err
           console.log info.totalNotes
@@ -84,7 +84,7 @@ class sync
       cggc = async.compose(
         self.getContent,self.getTagName,
         self.createNote)
-      cggc item, (err2, res2) ->
+      cggc item, self, (err2, res2) ->
         return cb(err2) if err2
 
         cb()
@@ -93,7 +93,7 @@ class sync
       cggu = async.compose(
         self.getContent, self.getTagName,
         self.upbaseInfo)
-      cggu note, item, (err3, res3) ->
+      cggu note, item, self, (err3, res3) ->
         return cb(err3) if err3
 
         cb()
@@ -101,7 +101,7 @@ class sync
 
 
 
-  createNote: (noteInfo, cb) ->
+  createNote: (noteInfo, self, cb) ->
     newNote = new Note()
     newNote.guid = noteInfo.guid
     newNote.title = noteInfo.title
@@ -114,44 +114,40 @@ class sync
     cb(null, newNote)
 
 
-  getContent: (note, cb) ->
-    self = @
-
+  getContent: (note, self, cb) ->
+#    self = @
+#    console.log self
     noteStore.getNoteContent note.guid, (err, content) ->
       return cb(err) if err
 
       console.log "getContent ==>", note.title
       if note.content != content
         note.content = content
-        if true
-          self.changeImgHtml note, (err1) ->
-            return cb(err1) if err1
+      self.changeImgHtml note, (err1, row) ->
+        return cb(err1) if err1
 
-            cb(null, note)
-      else
-        cb(null, note)
+        cb(null, row)
 
 
-  getTagName: (note, cb) ->
+  getTagName: (note, self, cb) ->
     noteStore.getNoteTagNames note.guid, (err, tagsName) ->
       return cb(err) if err
 
       note.tags = tagsName if not eqArr note.tags, tagsName
       console.log "getTagName ==>", note.title
-      cb(null, note)
+      cb(null, note, self)
 
 
-  upbaseInfo: (note, upInfo, cb) ->
+  upbaseInfo: (note, upInfo, self, cb) ->
 #    console.log upInfo
     for v, k of upInfo
-      console.log(note.hasOwnProperty v)
-      if note.hasOwnProperty v
+      if v of note
         note[v] = k
-        console.log "k ==>", k
-        console.log "v ==>", v
+#        console.log "k ==>", k
+#        console.log "v ==>", v
 
     console.log "upbaseInfo ==>", note.title
-    cb(null, note)
+    cb(null, note, self)
 
   changeImgHtml:(note, cb) ->
     console.log "changeImgHtml ==>", note.title
@@ -205,7 +201,7 @@ getAllNoteTag = (callback) ->
   Note.find {}, 'tags':1, (err, tags) ->
     return cb(err) if err
 
-    console.log "getAllNoteTag ==>", tags
+#    console.log "getAllNoteTag ==>", tags
     callback(null, tags)
 
 getTagStr = (tagArr, cb) ->

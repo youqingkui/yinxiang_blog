@@ -52,7 +52,7 @@
       self = this;
       return async.auto({
         getNote: function(callback) {
-          return noteStore.findNotesMetadata(self.filterNote, 0, 1, self.reParams, function(err, info) {
+          return noteStore.findNotesMetadata(self.filterNote, 0, 100, self.reParams, function(err, info) {
             if (err) {
               return cb(err);
             }
@@ -107,7 +107,7 @@
       self = this;
       if (!note) {
         cggc = async.compose(self.getContent, self.getTagName, self.createNote);
-        return cggc(item, function(err2, res2) {
+        return cggc(item, self, function(err2, res2) {
           if (err2) {
             return cb(err2);
           }
@@ -115,7 +115,7 @@
         });
       } else {
         cggu = async.compose(self.getContent, self.getTagName, self.upbaseInfo);
-        return cggu(note, item, function(err3, res3) {
+        return cggu(note, item, self, function(err3, res3) {
           if (err3) {
             return cb(err3);
           }
@@ -124,7 +124,7 @@
       }
     };
 
-    sync.prototype.createNote = function(noteInfo, cb) {
+    sync.prototype.createNote = function(noteInfo, self, cb) {
       var newNote;
       newNote = new Note();
       newNote.guid = noteInfo.guid;
@@ -137,9 +137,7 @@
       return cb(null, newNote);
     };
 
-    sync.prototype.getContent = function(note, cb) {
-      var self;
-      self = this;
+    sync.prototype.getContent = function(note, self, cb) {
       return noteStore.getNoteContent(note.guid, function(err, content) {
         if (err) {
           return cb(err);
@@ -147,21 +145,17 @@
         console.log("getContent ==>", note.title);
         if (note.content !== content) {
           note.content = content;
-          if (true) {
-            return self.changeImgHtml(note, function(err1) {
-              if (err1) {
-                return cb(err1);
-              }
-              return cb(null, note);
-            });
-          }
-        } else {
-          return cb(null, note);
         }
+        return self.changeImgHtml(note, function(err1, row) {
+          if (err1) {
+            return cb(err1);
+          }
+          return cb(null, row);
+        });
       });
     };
 
-    sync.prototype.getTagName = function(note, cb) {
+    sync.prototype.getTagName = function(note, self, cb) {
       return noteStore.getNoteTagNames(note.guid, function(err, tagsName) {
         if (err) {
           return cb(err);
@@ -170,23 +164,20 @@
           note.tags = tagsName;
         }
         console.log("getTagName ==>", note.title);
-        return cb(null, note);
+        return cb(null, note, self);
       });
     };
 
-    sync.prototype.upbaseInfo = function(note, upInfo, cb) {
+    sync.prototype.upbaseInfo = function(note, upInfo, self, cb) {
       var k, v;
       for (v in upInfo) {
         k = upInfo[v];
-        console.log(note.hasOwnProperty(v));
-        if (note.hasOwnProperty(v)) {
+        if (v in note) {
           note[v] = k;
-          console.log("k ==>", k);
-          console.log("v ==>", v);
         }
       }
       console.log("upbaseInfo ==>", note.title);
-      return cb(null, note);
+      return cb(null, note, self);
     };
 
     sync.prototype.changeImgHtml = function(note, cb) {
@@ -260,7 +251,6 @@
       if (err) {
         return cb(err);
       }
-      console.log("getAllNoteTag ==>", tags);
       return callback(null, tags);
     });
   };
