@@ -132,7 +132,10 @@ class Sync
 
           cb(null, row)
       else
-        cb(null, note)
+        note.save (err2, row2) ->
+          return cb(err2) if err2
+
+          cb(null, row2)
 
 
   getTagName: (note, self, cb) ->

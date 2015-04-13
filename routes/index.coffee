@@ -422,20 +422,6 @@ router.get '/sync2', (req, res) ->
 #    console.log tags
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #router.get '/sync', (req, res) ->
 #  # 设置查找的笔记本
 #  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'

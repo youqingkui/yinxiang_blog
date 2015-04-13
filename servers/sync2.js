@@ -160,7 +160,12 @@
             return cb(null, row);
           });
         } else {
-          return cb(null, note);
+          return note.save(function(err2, row2) {
+            if (err2) {
+              return cb(err2);
+            }
+            return cb(null, row2);
+          });
         }
       });
     };
