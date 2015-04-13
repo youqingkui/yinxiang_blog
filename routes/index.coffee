@@ -180,8 +180,15 @@ router.get '/archive', (req, res) ->
 
       ,(eachErr) ->
         return console.log eachErr if eachErr
+        tmp = []
+        for i, v of archive
+          tmp1 = {}
+          tmp1[i] = v
+          tmp.push tmp1
+
+        console.log tmp.reverse()
         return res.render 'archive', {
-          archive:archive
+          archives:tmp
           getLocalTime:getLocalTime
           title:"Archive List"
 

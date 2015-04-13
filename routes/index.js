@@ -270,11 +270,20 @@
             }
             return callback();
           }, function(eachErr) {
+            var i, tmp, tmp1, v;
             if (eachErr) {
               return console.log(eachErr);
             }
+            tmp = [];
+            for (i in archive) {
+              v = archive[i];
+              tmp1 = {};
+              tmp1[i] = v;
+              tmp.push(tmp1);
+            }
+            console.log(tmp.reverse());
             return res.render('archive', {
-              archive: archive,
+              archives: tmp,
               getLocalTime: getLocalTime,
               title: "Archive List"
             });
