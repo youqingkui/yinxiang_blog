@@ -153,13 +153,15 @@
         console.log("getContent ==>", note.title);
         if (note.content !== content) {
           note.content = content;
-        }
-        return self.changeImgHtml(note, function(err1, row) {
-          if (err1) {
-            return cb(err1);
-          }
+          return self.changeImgHtml(note, function(err1, row) {
+            if (err1) {
+              return cb(err1);
+            }
+            return cb(null, row);
+          });
+        } else {
           return cb(null, row);
-        });
+        }
       });
     };
 

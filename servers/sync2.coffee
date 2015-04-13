@@ -127,9 +127,11 @@ class Sync
       console.log "getContent ==>", note.title
       if note.content != content
         note.content = content
-      self.changeImgHtml note, (err1, row) ->
-        return cb(err1) if err1
+        self.changeImgHtml note, (err1, row) ->
+          return cb(err1) if err1
 
+          cb(null, row)
+      else
         cb(null, row)
 
 
