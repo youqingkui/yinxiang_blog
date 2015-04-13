@@ -160,7 +160,7 @@
             return cb(null, row);
           });
         } else {
-          return cb(null, row);
+          return cb(null, note);
         }
       });
     };

@@ -352,7 +352,7 @@
           if (err) {
             return console.log(err);
           }
-          if (result === false) {
+          if (result === true) {
             return cb();
           } else {
             return res.send("don't need update");

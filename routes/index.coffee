@@ -237,7 +237,7 @@ router.get '/sync2', (req, res) ->
         if err
           return console.log err
 
-        if result is false
+        if result is true
           cb()
         else
           return res.send "don't need update"

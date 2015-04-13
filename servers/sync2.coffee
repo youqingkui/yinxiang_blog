@@ -132,7 +132,7 @@ class Sync
 
           cb(null, row)
       else
-        cb(null, row)
+        cb(null, note)
 
 
   getTagName: (note, self, cb) ->
