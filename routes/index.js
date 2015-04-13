@@ -284,6 +284,12 @@
     });
   });
 
+  router.get('/about', function(req, res) {
+    return res.render('about', {
+      title: 'About'
+    });
+  });
+
   router.get('/sync', function(req, res) {
     var sync;
     sync = new Sync();

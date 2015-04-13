@@ -190,6 +190,10 @@ router.get '/archive', (req, res) ->
     ]
 
 
+router.get '/about', (req, res) ->
+  return res.render 'about', {title:'About'}
+
+
 
 
 router.get '/sync', (req, res) ->
