@@ -114,7 +114,7 @@ class Sync
     newNote.tagGuids = noteInfo.tagGuids
     newNote.notebookGuid = noteInfo.notebookGuid
 
-    cb(null, newNote)
+    cb(null, newNote, self)
 
 
   getContent: (note, self, cb) ->

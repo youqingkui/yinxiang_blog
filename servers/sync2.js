@@ -140,7 +140,7 @@
       newNote.updated = noteInfo.updated;
       newNote.tagGuids = noteInfo.tagGuids;
       newNote.notebookGuid = noteInfo.notebookGuid;
-      return cb(null, newNote);
+      return cb(null, newNote, self);
     };
 
     Sync.prototype.getContent = function(note, self, cb) {

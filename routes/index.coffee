@@ -2,9 +2,13 @@ express = require('express')
 router = express.Router()
 
 async = require('async')
+#log = require('debug')('app:index')
+#require('debug-yq')(log)
 uniq = require('uniq')
-
+fs = require('fs')
+crypto = require('crypto')
 Evernote = require('evernote').Evernote;
+
 client = require('../servers/ervernote')
 noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore')
 Note = require('../models/note')
@@ -17,8 +21,6 @@ help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
 toInt = help.toInt
-#hexdump = require('hexdump-nodejs')
-
 
 ### GET home page. ###
 router.get '/', (req, res, next) ->
@@ -26,41 +28,41 @@ router.get '/', (req, res, next) ->
   page = 1 if page <= 0 or not page
   count = 0
   async.auto
-    getCount:(cb) ->
+    getCount: (cb) ->
       Note.count (err, number) ->
         if err
           return console.log err
         count = Math.ceil number / 10
         cb()
 
-    pageNote:(cb) ->
+    pageNote: (cb) ->
       Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
         return console.log err if err
         cb(null, notes)
 
-    getRecentNote:(cb) ->
+    getRecentNote: (cb) ->
       Note.find().sort('-created').limit(4).exec (err, notes) ->
         if err
           return console.log err
 
         cb(null, notes)
 
-    getTags:(cb) ->
+    getTags: (cb) ->
       Tags.findOne (err, tags) ->
         return console.log err if err
 
         cb(null, tags)
 
-  ,(err, result) ->
+  , (err, result) ->
     return console.log err if err
     return res.render 'index', {
-      notes:result.pageNote
-      currPage:page
-      countPage:count
-      getLocalTime:getLocalTime
-      recentNote:result.getRecentNote
-      tags:result.getTags.tags
-      title:"友情's 笔记"
+      notes: result.pageNote
+      currPage: page
+      countPage: count
+      getLocalTime: getLocalTime
+      recentNote: result.getRecentNote
+      tags: result.getTags.tags
+      title: "友情's 笔记"
     }
 
 ### 分页获取 ###
@@ -69,7 +71,7 @@ router.get '/page/:page', (req, res) ->
   page = 1 if page <= 0
   count = 0
   async.auto
-    getCount:(cb) ->
+    getCount: (cb) ->
       Note.count (err, number) ->
         if err
           return console.log err
@@ -77,95 +79,95 @@ router.get '/page/:page', (req, res) ->
         count = Math.ceil number / 10
         cb()
 
-    pageNote:(cb) ->
+    pageNote: (cb) ->
       Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
         return console.log err if err
         cb(null, notes)
 
-  ,(err, result) ->
-      return console.log err if err
-      return res.render 'index', {
-        notes:result.pageNote
-        currPage:page
-        countPage:count
-        getLocalTime:getLocalTime
-        title:"友情's 笔记"
-      }
+  , (err, result) ->
+    return console.log err if err
+    return res.render 'index', {
+      notes: result.pageNote
+      currPage: page
+      countPage: count
+      getLocalTime: getLocalTime
+      title: "友情's 笔记"
+    }
 
 ### 查找对应笔记 ###
 router.get '/note/:noteGuid', (req, res, next) ->
   noteGuid = req.params.noteGuid
   async.auto
-    findNote:(cb) ->
-      Note.findOne {guid:noteGuid}, (err, note) ->
+    findNote: (cb) ->
+      Note.findOne {guid: noteGuid}, (err, note) ->
         if err
           return console.log err
 
         return next() if not note
         cb(null, note)
 
-    recentNote:(cb) ->
+    recentNote: (cb) ->
       Note.find().sort('-created').limit(4).exec (err, notes) ->
         if err
           return console.log err
 
         cb(null, notes)
 
-    getTags:(cb) ->
+    getTags: (cb) ->
       Tags.findOne (err, tags) ->
         return console.log err if err
         cb(null, tags)
 
 
-  ,(autoErr, result) ->
-      return console.log autoErr if autoErr
-      return res.render 'note', {
-        note:result.findNote,
-        getLocalTime:getLocalTime,
-        recentNote:result.recentNote
-        tags:result.getTags.tags
-        title:result.findNote.title
-      }
+  , (autoErr, result) ->
+    return console.log autoErr if autoErr
+    return res.render 'note', {
+      note: result.findNote,
+      getLocalTime: getLocalTime,
+      recentNote: result.recentNote
+      tags: result.getTags.tags
+      title: result.findNote.title
+    }
 
 ### 查找对应标签笔记列表 ###
 router.get '/tag/:tag/', (req, res, next) ->
   tag = req.params.tag.trim()
   query = "this.tags.indexOf('#{tag}') > -1"
   async.auto
-    findNotes:(cb) ->
-      Note.find({},'title':1, 'guid':1, 'tags':1, 'updated':1, 'created':1)
-      .where({$where:query}).sort('-created').exec (err, notes) ->
+    findNotes: (cb) ->
+      Note.find({}, 'title': 1, 'guid': 1, 'tags': 1, 'updated': 1, 'created': 1)
+      .where({$where: query}).sort('-created').exec (err, notes) ->
         return console.log err if err
         return next() if not notes.length
         cb(null, notes)
 
 
-    getTags:(cb) ->
+    getTags: (cb) ->
       Tags.findOne (err, tags) ->
         return console.log err if err
         cb(null, tags)
 
-    ,(autoErr, result) ->
-      return console.log autoErr if autoErr
-      return res.render 'tags_note', {
-        notes:result.findNotes
-        tag:tag
-        getLocalTime:getLocalTime
-        tags:result.getTags.tags
-        title:"Tags #{tag}"
+  , (autoErr, result) ->
+    return console.log autoErr if autoErr
+    return res.render 'tags_note', {
+      notes: result.findNotes
+      tag: tag
+      getLocalTime: getLocalTime
+      tags: result.getTags.tags
+      title: "Tags #{tag}"
 
-      }
+    }
 
 ### 档案 ###
 router.get '/archive', (req, res) ->
   async.auto
-    getNotes:(cb) ->
-      Note.find({}, 'guid':1, 'created':1, 'title':1).sort('-created').exec (err, notes) ->
+    getNotes: (cb) ->
+      Note.find({}, 'guid': 1, 'created': 1, 'title': 1).sort('-created').exec (err, notes) ->
         return console.log err if err
         cb(null, notes)
 
 
-    getYear:['getNotes', (cb, result) ->
+    getYear: ['getNotes', (cb, result) ->
       notes = result.getNotes
       archive = {}
       async.eachSeries notes, (item, callback) ->
@@ -178,7 +180,7 @@ router.get '/archive', (req, res) ->
           archive[year].push item
         callback()
 
-      ,(eachErr) ->
+      , (eachErr) ->
         return console.log eachErr if eachErr
         tmp = []
         for i, v of archive
@@ -188,9 +190,9 @@ router.get '/archive', (req, res) ->
 
         console.log tmp.reverse()
         return res.render 'archive', {
-          archives:tmp
-          getLocalTime:getLocalTime
-          title:"Archive List"
+          archives: tmp
+          getLocalTime: getLocalTime
+          title: "Archive List"
 
         }
 
@@ -198,9 +200,7 @@ router.get '/archive', (req, res) ->
 
 
 router.get '/about', (req, res) ->
-  return res.render 'about', {title:'About'}
-
-
+  return res.render 'about', {title: 'About'}
 
 
 router.get '/sync', (req, res) ->
@@ -226,7 +226,7 @@ router.get '/sync', (req, res) ->
             return callback(err) if err
             callback()
 
-        ,(eachErr) ->
+        , (eachErr) ->
           return cb(eachErr) if eachErr
           cb()
       (cb) ->
@@ -234,7 +234,7 @@ router.get '/sync', (req, res) ->
           return cb(err) if err
           cb()
     ]
-  ,(sErr) ->
+  , (sErr) ->
     return console.log sErr if sErr
     res.send("sync new note ok")
 
@@ -243,7 +243,7 @@ router.get '/sync2', (req, res) ->
   sync = new Sync2()
 
   async.auto
-    checkStatus:(cb) ->
+    checkStatus: (cb) ->
       sync.compleSyncStatus (err, result) ->
         if err
           return console.log err
@@ -262,319 +262,39 @@ router.get '/sync2', (req, res) ->
     ]
 
 
-#router.get '/get_note_tag', (req, res) ->
-#  async.auto
-#    getNote:(cb) ->
-#      Note.find (err, notes) ->
-#        return console.log err if err
-#        cb(null, notes)
-#
-#    getTagName:['getNote', (cb, result) ->
-#      notes = result.getNote
-#      async.eachSeries notes, (item, callback) ->
-#        noteStore.getNoteTagNames item.guid, (err, tags) ->
-#          return console.log err if err
-#          item.tags = tags
-#          item.save (err, note) ->
-#            return console.log err if err
-#            callback()
-#
-#      ,(eachErr) ->
-#        return console.log eachErr if eachErr
-#        res.send("get tag ok")
-#    ]
-#
-#
-#router.get '/create_tags', (req, res) ->
-#  Note.find({}, 'tags':1).exec (err, notes) ->
-#    return console.log err if err
-#    tags = []
-#    for note in notes
-#      for t in note.tags
-#        tags.push t
-#
-#    tags = uniq(tags)
-#    Tags.findOne (err, info) ->
-#      return console.log err if err
-#
-#      if not info
-#        newTag = new Tags()
-#        newTag.tags = tags
-#        newTag.save (err, row) ->
-#          return console.log err if err
-#          console.log "ok save tages", row
-#          return res.send("create_tags ok")
-#
-#      else
-#        return res.send("tags already exits")
+router.get '/img', (req, res) ->
 
+  note = new Evernote.Note();
+  note.title = "Test note from EDAMTest.js"
+  image = fs.readFileSync(__dirname + '/01.png')
+  statInfo = fs.statSync(__dirname + '/01.png')
+  return console.log statInfo
+  hash = image.toString('base64')
 
-#router.get '/notebooks', (req, res) ->
-#  noteStore.listNotebooks (err, list) ->
-#    if err
-#      return console.log err
-#    console.log list
-#    return res.render 'notebook', {
-#      notebooks: list
-#    }
-#
-#router.get '/listnote', (req, res) ->
-#  filterNote = new Evernote.NoteFilter()
-#  guid = '2e5dc578-8a1d-4303-8be7-5711ea6fa301'
-#  filterNote.notebookGuid = guid
-#  noteStore.findNotes filterNote, 0, 10, (err, notes) ->
-#    if err
-#      console.log "here"
-#      return console.log err
-#    console.log notes
-#    return res.render 'notes', {
-#      notes:notes
-#    }
-#
-#
-#
-#router.get '/test', (req, res) ->
-#  filterNote = new Evernote.NoteFilter()
-#  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
-#  filterNote.notebookGuid = guid
-#
-#  noteStore.findNotes filterNote, 0, 50, (err, notes) ->
-#    if err
-#      return console.log err
-#    async.each notes.notes, (item, callback) ->
-#      newNote = new Note()
-#      newNote.guid = item.guid
-#      newNote.title = item.title
-#      newNote.content =  item.content
-#      newNote.created = item.created
-#      newNote.updated = item.updated
-#      newNote.deleted = item.deleted
-#      newNote.tagGuids = item.tagGuids
-#      newNote.notebookGuid = item.notebookGuid
-#      newNote.findSameGuid (err, note) ->
-#        if err
-#          return console.log err
-#
-#        if not note
-#          newNote.save (err, noteInfo) ->
-#            if err
-#              return console.log err
-#
-#            callback()
-#
-#        else
-#          console.log "已经存在:", note.guid
-#          callback()
-#
-#    ,(eachErr) ->
-#      if eachErr
-#        return console.log err
-#      return res.send "ok"
-#      return res.redirect('/test_note')
-#
-#
-#router.get '/test_note', (req, res) ->
-#  async.auto
-#    getDbNote:(cb) ->
-#      Note.find (err, notes) ->
-#        if err
-#          return console.log err
-#
-#        cb(null, notes)
-#
-#    getNoteInfo:['getDbNote', (cb, result) ->
-#      notes = result.getDbNote
-#      async.eachSeries notes, (item, callback) ->
-#        noteStore.getNote item.guid,true,false,false,false, (err, noteInfo) ->
-#          if err
-#            return console.log err
-#
-#          item.content = noteInfo.content
-#          item.save (err, note) ->
-#            if err
-#              return console.log err
-#
-#            callback()
-#
-#      ,(eachErr) ->
-#        if eachErr
-#          console.log err if eachErr
-#
-#        return res.send "ok"
-#    ]
+  data = new Evernote.Data()
+  data.size = image.length
+  data.bodyHash = hash
+  data.body = image
 
+  resource = new Evernote.Resource()
+  resource.mime = 'image/png'
+  resource.data = data
 
+  note.resources = [resource]
+  md5 = crypto.createHash('md5')
+  md5.update(image)
+  hashHex = md5.digest('hex')
 
-#router.get '/test_db', (req, res) ->
-#  newNote = new Note()
-#  newNote.guid = '123456333'
-##  newNote.save (err, res) ->
-##    if err
-##      return console.log err
-##
-##    console.log res
-#  newNote.findSameGuid (err, note) ->
-#    if err
-#      return console.log err
-#
-#    console.log note
-#
-#
-#router.get '/test_tag', (req, res) ->
-#  guid = 'e57abb2a-3997-47f1-b9fe-ac94740130ce'
-#  noteStore.getNoteTagNames guid, (err, tag) ->
-#    if err
-#      return console.log err
-#
-#    console.log tag
+  note.content = '<?xml version="1.0" encoding="UTF-8"?>';
+  note.content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
+  note.content += '<en-note>Here is the Evernote logo:<br/>';
+  note.content += '<en-media type="image/png" hash="' + hashHex + '"/>';
+  note.content += '</en-note>';
 
-#  noteStore.listTagsByNotebook 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406', (err, tags) ->
-#    return console.log err if err
-#    console.log tags
+  noteStore.createNote note, (err, info) ->
+    if err
+      return console.log err
 
-
-#router.get '/sync', (req, res) ->
-#  # 设置查找的笔记本
-#  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
-#  filterNote = new Evernote.NoteFilter()
-#  filterNote.notebookGuid = guid
-#
-#  # 设置查找返回的参数
-#  reParams = new Evernote.NotesMetadataResultSpec()
-#  reParams.includeTitle = true
-#  reParams.includeCreated = true
-#  reParams.includeUpdated = true
-#  reParams.includeDeleted = true
-#  reParams.includeTagGuids = true
-#  reParams.includeNotebookGuid = true
-#  reParams.includeTagGuids = true
-#
-#  noteStore.findNoteCounts filterNote, false, (err, info) ->
-#    return console.log err if err
-#    console.log info
-
-#  noteStore.getNoteContent '178c3462-46a2-4b04-bc80-3c8aaf0ab60b', (err, info) ->
-#    return console.log err if err
-#    console.log info
-#  noteStore.getNotebook guid, (err, info) ->
-#    return console.log err if err
-#    console.log info
-
-#  noteStore.findNotesMetadata filterNote, 0, 100, reParams, (err, info) ->
-#    return console.log err if err
-#    console.log info.notes.length
-
-
-#router.get '/sync_status', (req, res, next) ->
-##  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
-##  filterNote = new Evernote.NoteFilter()
-##  reParams = new Evernote.NotesMetadataResultSpec()
-##  reParams.includeTitle = true
-##  filterNote.notebookGuid = guid
-#
-#  async.auto
-#    getDbSyncStatus:(cb) ->
-#      SyncStatus.findOne (err, row) ->
-#        return console.log err if err
-#        cb(null, row)
-#
-#    getSyncStatus:(cb) ->
-#      noteStore.getSyncState (err, info) ->
-#        return console.log err if err
-#        console.log info
-#        console.log getLocalTime(info.currentTime / 1000)
-#        console.log getLocalTime(info.fullSyncBefore / 1000)
-#        cb(null, info)
-#
-#    createSyncStatus:['getDbSyncStatus', (cb, result) ->
-#      row = result.getDbSyncStatus
-#      if not row
-#        newSatus = new SyncStatus()
-#        newSatus.syncStatus = 0
-#        newSatus.save (err, info) ->
-#          return console.log err if err
-#          cb(null, info)
-#      else
-#        cb(null, row)
-#
-#    ]
-#
-#    checkStatus:['createSyncStatus', 'getSyncStatus', (cb, result) ->
-#      dbInfo = result.createSyncStatus
-#      serverInfo = result.getSyncStatus
-#      if dbInfo.syncStatus != serverInfo.updateCount
-#        dbInfo.syncStatus = serverInfo.updateCount
-#        dbInfo.save (err, row) ->
-#          return console.log err if err
-#          return res.redirect('/sync')
-#
-#      else
-#        return res.send "no need syncs"
-#    ]
-
-#router.get '/status', (req, res) ->
-#  noteStore.getSyncState (err, info) ->
-#    return console.log err if err
-#    console.log info
-
-#router.get '/res', (req, res) ->
-#  noteStore.getNote 'c47386e3-b9c3-4964-8dfe-c77f8b2af594', false, false, false,false, (err, info) ->
-#    return console.log err if err
-#    res.send info
-#
-#router.get '/res2', (req, res) ->
-#  noteStore.getResource 'c41e5d85-a39c-4d72-ad40-345da51f4a15', true, false, false, false, (err, info) ->
-#    return console.log err if err
-#    res.send info
-#
-#router.get '/hash', (req, res) ->
-#  hash = new Buffer('2d20b436386e316e446c857f37043ada', 'hex')
-#  console.log hash
-#  noteStore.getResourceByHash '2d7cd66f-110f-40a2-9d59-e20b13e072a7', (hash.encode_utf8()), true, false, false, (err, data) ->
-#    if err
-#      return console.log err
-#
-#    console.log data
-
-#router.get '/test1', (req, res) ->
-#  guid = 'bd6d5877-9ff8-400d-9d83-f6c4baeb2406'
-#  guid2 = '225d9cfe-30e7-44e3-a4db-2ebc2575be58'
-#  filterNote = new Evernote.NoteFilter()
-#  filterNote.notebookGuid = guid2
-#
-#  reParams = new Evernote.NotesMetadataResultSpec()
-#  reParams.includeTitle = true
-#  reParams.includeCreated = true
-#  reParams.includeUpdated = true
-#  reParams.includeDeleted = true
-#  reParams.includeTagGuids = true
-#  reParams.includeNotebookGuid = true
-#  reParams.includeTagGuids = true
-#  noteStore.findNotesMetadata filterNote, 0, 500, reParams, (err, info) ->
-#    return console.log err if err
-#
-#    console.log info
-#    console.log info.notes.length
-
-#  noteStore.listNotebooks (err, info) ->
-#    console.log info
-#    res.send info
-
-
-
-
-
-
-
-#  sync.syncInfo (err) ->
-#    if err
-#      return console.log err
-
-#
-#router.get '/test3', (req, res) ->
-#  sync = new Sync2()
-#  sync.compleNoteBooksTag (err) ->
-#    return console.log err if err
-
+    console.log info
 
 module.exports = router
