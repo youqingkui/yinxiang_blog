@@ -42,7 +42,7 @@
 
   app.use(cookieParser());
 
-  app.use(logger({
+  app.use(logger('combined', {
     stream: accessLog
   }));
 

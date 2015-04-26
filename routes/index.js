@@ -43,7 +43,8 @@
 
   router.get('/', function(req, res, next) {
     var count, page;
-    page = toInt(req.param('page'));
+    console.log(req.query);
+    page = toInt(req.query.page);
     if (page <= 0 || !page) {
       page = 1;
     }

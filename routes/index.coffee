@@ -24,7 +24,8 @@ toInt = help.toInt
 
 ### GET home page. ###
 router.get '/', (req, res, next) ->
-  page = toInt(req.param('page'))
+  console.log req.query
+  page = toInt(req.query.page)
   page = 1 if page <= 0 or not page
   count = 0
   async.auto
