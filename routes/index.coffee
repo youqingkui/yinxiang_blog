@@ -24,7 +24,6 @@ toInt = help.toInt
 
 ### GET home page. ###
 router.get '/', (req, res, next) ->
-  console.log req.query
   page = toInt(req.query.page)
   page = 1 if page <= 0 or not page
   count = 0
@@ -245,14 +244,15 @@ router.get '/sync2', (req, res) ->
 
   async.auto
     checkStatus: (cb) ->
-      sync.compleSyncStatus (err, result) ->
-        if err
-          return console.log err
-
-        if result is true
-          cb()
-        else
-          return res.send "don't need update"
+      cb()
+#      sync.compleSyncStatus (err, result) ->
+#        if err
+#          return console.log err
+#
+#        if result is true
+#          cb()
+#        else
+#          return res.send "don't need update"
 
     syncInfo: ['checkStatus', (cb) ->
       sync.syncInfo (err) ->

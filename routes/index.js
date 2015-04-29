@@ -43,7 +43,6 @@
 
   router.get('/', function(req, res, next) {
     var count, page;
-    console.log(req.query);
     page = toInt(req.query.page);
     if (page <= 0 || !page) {
       page = 1;
@@ -368,16 +367,7 @@
     sync = new Sync2();
     return async.auto({
       checkStatus: function(cb) {
-        return sync.compleSyncStatus(function(err, result) {
-          if (err) {
-            return console.log(err);
-          }
-          if (result === true) {
-            return cb();
-          } else {
-            return res.send("don't need update");
-          }
-        });
+        return cb();
       },
       syncInfo: [
         'checkStatus', function(cb) {
