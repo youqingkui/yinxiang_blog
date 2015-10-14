@@ -285,7 +285,6 @@
               tmp1[i] = v;
               tmp.push(tmp1);
             }
-            console.log(tmp.reverse());
             return res.render('archive', {
               archives: tmp,
               getLocalTime: getLocalTime,
