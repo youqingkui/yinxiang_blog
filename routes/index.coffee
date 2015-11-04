@@ -2,8 +2,6 @@ express = require('express')
 router = express.Router()
 
 async = require('async')
-#log = require('debug')('app:index')
-#require('debug-yq')(log)
 uniq = require('uniq')
 fs = require('fs')
 crypto = require('crypto')
@@ -15,7 +13,6 @@ Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
 
-Sync = require('../servers/sync')
 Sync2 = require('../servers/sync2')
 help = require('../servers/help')
 getLocalTime = help.getLocalTime
@@ -27,7 +24,7 @@ router.get '/', (req, res, next) ->
   page = toInt(req.query.page)
   page = 1 if page <= 0 or not page
   count = 0
-  async.auto
+  async.parallel
     getCount: (cb) ->
       Note.count (err, number) ->
         if err
@@ -65,39 +62,11 @@ router.get '/', (req, res, next) ->
       title: "友情's 笔记"
     }
 
-### 分页获取 ###
-router.get '/page/:page', (req, res) ->
-  page = toInt(req.params.page)
-  page = 1 if page <= 0
-  count = 0
-  async.auto
-    getCount: (cb) ->
-      Note.count (err, number) ->
-        if err
-          return console.log err
-        console.log "count note ==>", number
-        count = Math.ceil number / 10
-        cb()
-
-    pageNote: (cb) ->
-      Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
-        return console.log err if err
-        cb(null, notes)
-
-  , (err, result) ->
-    return console.log err if err
-    return res.render 'index', {
-      notes: result.pageNote
-      currPage: page
-      countPage: count
-      getLocalTime: getLocalTime
-      title: "友情's 笔记"
-    }
 
 ### 查找对应笔记 ###
 router.get '/note/:noteGuid', (req, res, next) ->
   noteGuid = req.params.noteGuid
-  async.auto
+  async.parallel
     findNote: (cb) ->
       Note.findOne {guid: noteGuid}, (err, note) ->
         if err
@@ -132,11 +101,11 @@ router.get '/note/:noteGuid', (req, res, next) ->
 ### 查找对应标签笔记列表 ###
 router.get '/tag/:tag/', (req, res, next) ->
   tag = req.params.tag.trim()
-  query = "this.tags.indexOf('#{tag}') > -1"
-  async.auto
+#  query = "this.tags.indexOf('#{tag}') > -1"
+  async.parallel
     findNotes: (cb) ->
-      Note.find({}, 'title': 1, 'guid': 1, 'tags': 1, 'updated': 1, 'created': 1)
-      .where({$where: query}).sort('-created').exec (err, notes) ->
+      Note.find({tags:tag}, 'title': 1, 'guid': 1, 'tags': 1, 'updated': 1, 'created': 1)
+      .sort('-created').exec (err, notes) ->
         return console.log err if err
         return next() if not notes.length
         cb(null, notes)
@@ -203,40 +172,40 @@ router.get '/about', (req, res) ->
   return res.render 'about', {title: 'About'}
 
 
-router.get '/sync', (req, res) ->
-  sync = new Sync()
-  async.series [
-      (cb) ->
-        sync.checkStatus (err) ->
-          return cb(err) if err
-          console.log("sync.needSync", sync.needSync)
-          if sync.needSync is false
-            return res.send "status not change don't need sync"
-          else
-            cb()
-      (cb) ->
-        sync.getNoteCount (err) ->
-          return cb(err) if err
-          cb()
-
-      (cb) ->
-        loopNum = [0...sync.page]
-        async.eachSeries loopNum, (item, callback) ->
-          sync.syncInfo item * 50, 50, (err) ->
-            return callback(err) if err
-            callback()
-
-        , (eachErr) ->
-          return cb(eachErr) if eachErr
-          cb()
-      (cb) ->
-        sync.updateNoteBookTags (err) ->
-          return cb(err) if err
-          cb()
-    ]
-  , (sErr) ->
-    return console.log sErr if sErr
-    res.send("sync new note ok")
+#router.get '/sync', (req, res) ->
+#  sync = new Sync()
+#  async.series [
+#      (cb) ->
+#        sync.checkStatus (err) ->
+#          return cb(err) if err
+#          console.log("sync.needSync", sync.needSync)
+#          if sync.needSync is false
+#            return res.send "status not change don't need sync"
+#          else
+#            cb()
+#      (cb) ->
+#        sync.getNoteCount (err) ->
+#          return cb(err) if err
+#          cb()
+#
+#      (cb) ->
+#        loopNum = [0...sync.page]
+#        async.eachSeries loopNum, (item, callback) ->
+#          sync.syncInfo item * 50, 50, (err) ->
+#            return callback(err) if err
+#            callback()
+#
+#        , (eachErr) ->
+#          return cb(eachErr) if eachErr
+#          cb()
+#      (cb) ->
+#        sync.updateNoteBookTags (err) ->
+#          return cb(err) if err
+#          cb()
+#    ]
+#  , (sErr) ->
+#    return console.log sErr if sErr
+#    res.send("sync new note ok")
 
 
 router.get '/sync2', (req, res) ->
@@ -263,39 +232,39 @@ router.get '/sync2', (req, res) ->
     ]
 
 
-router.get '/img', (req, res) ->
-
-  note = new Evernote.Note();
-  note.title = "Test note from EDAMTest.js"
-  image = fs.readFileSync(__dirname + '/01.png')
-  statInfo = fs.statSync(__dirname + '/01.png')
-  return console.log statInfo
-  hash = image.toString('base64')
-
-  data = new Evernote.Data()
-  data.size = image.length
-  data.bodyHash = hash
-  data.body = image
-
-  resource = new Evernote.Resource()
-  resource.mime = 'image/png'
-  resource.data = data
-
-  note.resources = [resource]
-  md5 = crypto.createHash('md5')
-  md5.update(image)
-  hashHex = md5.digest('hex')
-
-  note.content = '<?xml version="1.0" encoding="UTF-8"?>';
-  note.content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
-  note.content += '<en-note>Here is the Evernote logo:<br/>';
-  note.content += '<en-media type="image/png" hash="' + hashHex + '"/>';
-  note.content += '</en-note>';
-
-  noteStore.createNote note, (err, info) ->
-    if err
-      return console.log err
-
-    console.log info
-
+#router.get '/img', (req, res) ->
+#
+#  note = new Evernote.Note();
+#  note.title = "Test note from EDAMTest.js"
+#  image = fs.readFileSync(__dirname + '/01.png')
+#  statInfo = fs.statSync(__dirname + '/01.png')
+#  return console.log statInfo
+#  hash = image.toString('base64')
+#
+#  data = new Evernote.Data()
+#  data.size = image.length
+#  data.bodyHash = hash
+#  data.body = image
+#
+#  resource = new Evernote.Resource()
+#  resource.mime = 'image/png'
+#  resource.data = data
+#
+#  note.resources = [resource]
+#  md5 = crypto.createHash('md5')
+#  md5.update(image)
+#  hashHex = md5.digest('hex')
+#
+#  note.content = '<?xml version="1.0" encoding="UTF-8"?>';
+#  note.content += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
+#  note.content += '<en-note>Here is the Evernote logo:<br/>';
+#  note.content += '<en-media type="image/png" hash="' + hashHex + '"/>';
+#  note.content += '</en-note>';
+#
+#  noteStore.createNote note, (err, info) ->
+#    if err
+#      return console.log err
+#
+#    console.log info
+#
 module.exports = router

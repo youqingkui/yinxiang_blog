@@ -119,8 +119,6 @@ class Sync
 
   getContent: (note, self, cb) ->
     ### 获取内容 ###
-#    self = @
-#    console.log self
     noteStore.getNoteContent note.guid, (err, content) ->
       return cb(err) if err
 
@@ -194,48 +192,7 @@ class Sync
 
       cb()
 
-  compleSyncStatus: (cb) ->
-    ### 检查是否需要同步 ###
-
-    getDbStatus = (callback) ->
-      SyncStatus.findOne (err, row) ->
-        return callback(err) if err
-
-        console.log "getDbStatus ==>", row
-        callback(null, row)
-
-    getServerStatus = (dbStatus, callback) ->
-      noteStore.getSyncState (err, info) ->
-        return callback(err) if err
-
-        console.log "getServerStatus ==>", info
-        callback(null, dbStatus, info)
-
-    compleStatus = (dbStatus, serverStatus, callback) ->
-      needUp = false
-      if not dbStatus
-        dbStatus = new SyncState()
-      console.log dbStatus.updateCount != serverStatus.updateCount
-      if dbStatus.updateCount != serverStatus.updateCount
-        needUp = true
-        for k, v of serverStatus
-          dbStatus[k] = v
-
-      dbStatus.save (err, row) ->
-        return callback (err) if err
-
-        cb(null, needUp)
-
-
-    cgg = async.compose(compleStatus, getServerStatus, getDbStatus)
-    cgg (err, result) ->
-      return cb(err) if err
-
-      cb(null, result)
-
-
-
-
+# 下载笔记图片
 getImgRes = (hashStr, minmeType, noteGuid, cb) ->
   pyFile = __dirname + '/test.py'
   console.log pyFile
@@ -248,7 +205,7 @@ getImgRes = (hashStr, minmeType, noteGuid, cb) ->
     fs.writeFileSync writeRes, img
     cb()
 
-
+# 获取数据库所有标签
 getAllNoteTag = (callback) ->
   Note.find {}, 'tags':1, (err, tags) ->
     return cb(err) if err
@@ -256,6 +213,7 @@ getAllNoteTag = (callback) ->
 #    console.log "getAllNoteTag ==>", tags
     callback(null, tags)
 
+# 得到所有标签名
 getTagStr = (tagArr, cb) ->
   tags = []
   async.eachSeries tagArr, (item, callback) ->
@@ -269,6 +227,7 @@ getTagStr = (tagArr, cb) ->
     console.log "getTagStr ==>", tags
     cb(null, tags)
 
+# 保存所有标签
 saveTags = (tags, cb) ->
   tags = uniq tags
   console.log "saveTags ==>", tags

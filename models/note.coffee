@@ -2,16 +2,21 @@ mongoose = require('./mongoose')
 uniq = require('uniq')
 
 noteSchema = mongoose.Schema
-  guid:String
-  title:String
-  content:String
-  created:Number
-  updated:Number
-  deleted:Boolean
-  tagGuids:Array
-  notebookGuid:String
-  htmlContent:String
-  tags:Array
+
+  guid:  # 笔记guid
+    type:String
+    unique:true
+
+  title:String   # 标题
+  content:String # 内容
+  created:Number # 创建时间
+  updated:Number # 更新时间
+  deleted:Boolean # 是否删除
+  tagGuids:Array  # 标签guid
+  notebookGuid:String # 笔记本guid
+  htmlContent:String  # html内容
+#  Summary:String      # 摘要，取150个字
+  tags:Array          # 标签名数组
 
 noteSchema.methods.findSameGuid = (cb) ->
   return @.model('Note').findOne {guid:@.guid} , cb
