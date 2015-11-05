@@ -12,6 +12,7 @@ noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore')
 Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
+redis = require('../models/redis')
 
 Sync2 = require('../servers/sync2')
 help = require('../servers/help')
@@ -68,23 +69,49 @@ router.get '/note/:noteGuid', (req, res, next) ->
   noteGuid = req.params.noteGuid
   async.parallel
     findNote: (cb) ->
-      Note.findOne {guid: noteGuid}, (err, note) ->
-        if err
-          return console.log err
+      time1 = Date.now()
+#      Note.findOne {guid: noteGuid}, (err, note) ->
+#        if err
+#          return console.log err
+#
+#        return next() if not note
+#        time2 = Date.now()
+#        console.log time2 - time1
+#        cb(null, note)
 
-        return next() if not note
-        cb(null, note)
+      redis.hgetall noteGuid, (err, notes) ->
+        return console.log err if err
+
+        return next() if not notes
+
+#        console.log notes
+
+        notes.tags = notes.tags.split(',')
+        time2 = Date.now()
+        console.log time2 - time1
+        cb(null, notes)
 
     recentNote: (cb) ->
-      Note.find().sort('-created').limit(4).exec (err, notes) ->
-        if err
-          return console.log err
+#      Note.find().sort('-created').limit(4).exec (err, notes) ->
+#        if err
+#          return console.log err
+#
+#        cb(null, notes)
 
+      redis.get 'recentNote', (err, notes) ->
+        return console.loge err if err
+
+        notes = JSON.parse notes
         cb(null, notes)
 
     getTags: (cb) ->
-      Tags.findOne (err, tags) ->
+#      Tags.findOne (err, tags) ->
+#        return console.log err if err
+#        cb(null, tags)
+      redis.hgetall 'tags', (err, tags) ->
         return console.log err if err
+
+        tags.tags = tags.tags.split(',')
         cb(null, tags)
 
 
@@ -92,7 +119,7 @@ router.get '/note/:noteGuid', (req, res, next) ->
     return console.log autoErr if autoErr
     return res.render 'note', {
       note: result.findNote,
-      getLocalTime: getLocalTime,
+#      getLocalTime: getLocalTime,
       recentNote: result.recentNote
       tags: result.getTags.tags
       title: result.findNote.title

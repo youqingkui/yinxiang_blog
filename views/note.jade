@@ -13,7 +13,7 @@ block content
           .entry-meta
             span
               i.fa.fa-calendar &nbsp;
-                = getLocalTime(note.created / 1000)
+                = note.created
 
             if note.tags.length
               li.fa.fa-tags
@@ -21,10 +21,10 @@ block content
                   a.tag(href='/tag/' + t) &nbsp;
                     = t
 
-            if getLocalTime(note.created / 1000) != getLocalTime(note.updated / 1000)
+            if note.created != note.updated
               span.count
                 i.fa.fa-clock-o &nbsp;
-                  = getLocalTime(note.updated/1000)
+                  = note.updated
 
 
         .entry!= note.htmlContent
