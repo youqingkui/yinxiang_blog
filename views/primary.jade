@@ -12,9 +12,10 @@
             each t in note.tags
               a.tag(href='/tag/' + t) &nbsp;
                 = t
+              | &nbsp;&nbsp;
 
         if getLocalTime(note.created / 1000) != getLocalTime(note.updated / 1000)
-          span.count
+          span.count &nbsp;&nbsp;
             i.fa.fa-clock-o &nbsp;
               = getLocalTime(note.updated/1000)
 
