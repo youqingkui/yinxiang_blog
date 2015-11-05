@@ -114,6 +114,7 @@ router.get '/tag/:tag/', (req, res, next) ->
     getTags: (cb) ->
       Tags.findOne (err, tags) ->
         return console.log err if err
+        console.log tags
         cb(null, tags)
 
   , (autoErr, result) ->
@@ -133,6 +134,7 @@ router.get '/archive', (req, res) ->
     getNotes: (cb) ->
       Note.find({}, 'guid': 1, 'created': 1, 'title': 1).sort('-created').exec (err, notes) ->
         return console.log err if err
+
         cb(null, notes)
 
 
@@ -151,15 +153,16 @@ router.get '/archive', (req, res) ->
 
       , (eachErr) ->
         return console.log eachErr if eachErr
-        tmp = []
-        for i, v of archive
-          tmp1 = {}
-          tmp1[i] = v
-          tmp.push tmp1
-
-#        console.log tmp.reverse()
+#        tmp = []
+#        for i, v of archive
+#          tmp1 = {}
+#          tmp1[i] = v
+#          tmp.push tmp1
+#
+##        console.log tmp.reverse()
+#        console.log "archive", archive
         return res.render 'archive', {
-          archives: tmp
+          archives: archive
           getLocalTime: getLocalTime
           title: "Archive List"
 

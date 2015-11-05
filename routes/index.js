@@ -177,6 +177,7 @@
           if (err) {
             return console.log(err);
           }
+          console.log(tags);
           return cb(null, tags);
         });
       }
@@ -228,19 +229,11 @@
             }
             return callback();
           }, function(eachErr) {
-            var i, tmp, tmp1, v;
             if (eachErr) {
               return console.log(eachErr);
             }
-            tmp = [];
-            for (i in archive) {
-              v = archive[i];
-              tmp1 = {};
-              tmp1[i] = v;
-              tmp.push(tmp1);
-            }
             return res.render('archive', {
-              archives: tmp,
+              archives: archive,
               getLocalTime: getLocalTime,
               title: "Archive List"
             });
