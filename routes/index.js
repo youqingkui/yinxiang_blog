@@ -192,7 +192,6 @@
           if (err) {
             return console.log(err);
           }
-          console.log(tags);
           return cb(null, tags);
         });
       }

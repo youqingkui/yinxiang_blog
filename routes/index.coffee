@@ -124,7 +124,6 @@ router.get '/tag/:tag/', (req, res, next) ->
     getTags: (cb) ->
       Tags.findOne (err, tags) ->
         return console.log err if err
-        console.log tags
         cb(null, tags)
 
   , (autoErr, result) ->
