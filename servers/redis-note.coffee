@@ -32,6 +32,49 @@ class RedisNote
       cb(null, notes)
 
 
+  getNoteCount:(cb) ->
+    Note.count (err, number) ->
+      return cb(err) if err
+
+      cb(null, number)
+
+
+  cacheNoteCount:(number, cb) ->
+    redis.set 'noteCount', number, (err, res) ->
+      return cb(err) if err
+
+      console.log "cache note count ok"
+      cb()
+
+
+  cachePageNote:(notes, cb) ->
+    page = 1
+    baseName = 'page:'
+    while notes.length > 0
+      pageName = baseName + page
+      spliceArr = notes.splice(0, 10)
+      spliceNote = []
+      for i in spliceArr
+        tmp =
+          title:i.title
+          tags:i.tags
+          guid:i.guid
+          created:getLocalTime(i.created / 1000)
+          updated:getLocalTime(i.updated / 1000)
+
+        spliceNote.push tmp
+
+      spliceJson = JSON.stringify(spliceNote)
+      redis.set pageName, spliceJson
+      page = page +  1
+      console.log page
+
+
+
+    console.log "cache page ok"
+
+
+
   cacheRecent:(notes, cb) ->
     recentNote = []
     async.each notes, (item, callback) ->
@@ -59,6 +102,7 @@ class RedisNote
       cb()
 
   cacheNote:(notes, cb) ->
+    console.log notes.length
     async.eachSeries notes, (item, callback) ->
       note =
         title:item.title
@@ -82,23 +126,40 @@ class RedisNote
   cacheRedis:() ->
     _this = @
     async.auto
+
+      # cache note
       A:(cb) ->
         _this.getNote cb
       B:['A', (cb, result) ->
         _this.cacheNote result.A, cb
       ]
 
+      # cache tags
       C:(cb) ->
         _this.getTags cb
       D:['C', (cb, res) ->
           _this.cacheTags res.C, cb
       ]
 
+      # cache recent note
       E:(cb) ->
         _this.getRecentNote cb
       F:['E', (cb, res) ->
         _this.cacheRecent res.E, cb
       ]
+
+      # cache note count number
+      G:(cb) ->
+        _this.getNoteCount cb
+      H:['G', (cb, res) ->
+        _this.cacheNoteCount res.G, cb
+      ]
+
+      # cache page note
+      J:['A', 'B', (cb, res) ->
+        _this.cachePageNote res.A, cb
+      ]
+
 
 
     ,(err) ->

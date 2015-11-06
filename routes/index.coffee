@@ -12,7 +12,8 @@ noteStore = client.getNoteStore('https://app.yinxiang.com/shard/s5/notestore')
 Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
-redis = require('../models/redis')
+Redis = require('ioredis')
+redis = new Redis()
 
 Sync2 = require('../servers/sync2')
 help = require('../servers/help')
@@ -27,28 +28,46 @@ router.get '/', (req, res, next) ->
   count = 0
   async.parallel
     getCount: (cb) ->
-      Note.count (err, number) ->
-        if err
-          return console.log err
-        count = Math.ceil number / 10
+#      Note.count (err, number) ->
+#        if err
+#          return console.log err
+#        count = Math.ceil number / 10
+#        cb()
+      redis.get 'noteCount', (err, number) ->
+        return console.log err if err
+        count = number
         cb()
 
     pageNote: (cb) ->
-      Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
+#      Note.find().sort('-created').skip(10 * (page - 1)).limit(10).exec (err, notes) ->
+#        return console.log err if err
+#        cb(null, notes)
+      redis.get 'page:' + page, (err, notes) ->
         return console.log err if err
+        notes = JSON.parse(notes)
         cb(null, notes)
 
     getRecentNote: (cb) ->
-      Note.find().sort('-created').limit(4).exec (err, notes) ->
-        if err
-          return console.log err
+#      Note.find().sort('-created').limit(4).exec (err, notes) ->
+#        if err
+#          return console.log err
+#
+#        cb(null, notes)
+      redis.get 'recentNote', (err, notes) ->
+        return console.loge err if err
 
+        notes = JSON.parse notes
         cb(null, notes)
 
     getTags: (cb) ->
-      Tags.findOne (err, tags) ->
+#      Tags.findOne (err, tags) ->
+#        return console.log err if err
+#
+#        cb(null, tags)
+      redis.hgetall 'tags', (err, tags) ->
         return console.log err if err
 
+        tags.tags = tags.tags.split(',')
         cb(null, tags)
 
   , (err, result) ->
@@ -57,7 +76,6 @@ router.get '/', (req, res, next) ->
       notes: result.pageNote
       currPage: page
       countPage: count
-      getLocalTime: getLocalTime
       recentNote: result.getRecentNote
       tags: result.getTags.tags
       title: "友情's 笔记"

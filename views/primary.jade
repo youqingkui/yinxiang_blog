@@ -6,7 +6,7 @@
       .entry-meta
         span
           i.fa.fa-calendar &nbsp;
-            =getLocalTime(note.created/1000)
+            = note.created
         if note.tags.length
           li.fa.fa-tags
             each t in note.tags
@@ -14,10 +14,10 @@
                 = t
               | &nbsp;&nbsp;
 
-        if getLocalTime(note.created / 1000) != getLocalTime(note.updated / 1000)
+        if note.created != note.updated
           span.count &nbsp;&nbsp;
             i.fa.fa-clock-o &nbsp;
-              = getLocalTime(note.updated/1000)
+              = note.updated
 
 
 

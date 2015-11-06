@@ -44,6 +44,52 @@
       });
     };
 
+    RedisNote.prototype.getNoteCount = function(cb) {
+      return Note.count(function(err, number) {
+        if (err) {
+          return cb(err);
+        }
+        return cb(null, number);
+      });
+    };
+
+    RedisNote.prototype.cacheNoteCount = function(number, cb) {
+      return redis.set('noteCount', number, function(err, res) {
+        if (err) {
+          return cb(err);
+        }
+        console.log("cache note count ok");
+        return cb();
+      });
+    };
+
+    RedisNote.prototype.cachePageNote = function(notes, cb) {
+      var baseName, i, j, len, page, pageName, spliceArr, spliceJson, spliceNote, tmp;
+      page = 1;
+      baseName = 'page:';
+      while (notes.length > 0) {
+        pageName = baseName + page;
+        spliceArr = notes.splice(0, 10);
+        spliceNote = [];
+        for (j = 0, len = spliceArr.length; j < len; j++) {
+          i = spliceArr[j];
+          tmp = {
+            title: i.title,
+            tags: i.tags,
+            guid: i.guid,
+            created: getLocalTime(i.created / 1000),
+            updated: getLocalTime(i.updated / 1000)
+          };
+          spliceNote.push(tmp);
+        }
+        spliceJson = JSON.stringify(spliceNote);
+        redis.set(pageName, spliceJson);
+        page = page + 1;
+        console.log(page);
+      }
+      return console.log("cache page ok");
+    };
+
     RedisNote.prototype.cacheRecent = function(notes, cb) {
       var recentNote;
       recentNote = [];
@@ -80,6 +126,7 @@
     };
 
     RedisNote.prototype.cacheNote = function(notes, cb) {
+      console.log(notes.length);
       return async.eachSeries(notes, function(item, callback) {
         var note;
         note = {
@@ -131,6 +178,19 @@
         F: [
           'E', function(cb, res) {
             return _this.cacheRecent(res.E, cb);
+          }
+        ],
+        G: function(cb) {
+          return _this.getNoteCount(cb);
+        },
+        H: [
+          'G', function(cb, res) {
+            return _this.cacheNoteCount(res.G, cb);
+          }
+        ],
+        J: [
+          'A', 'B', function(cb, res) {
+            return _this.cachePageNote(res.A, cb);
           }
         ]
       }, function(err) {
