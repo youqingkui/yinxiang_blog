@@ -73,9 +73,14 @@ class Sync
         self.compleNoteBooksTag (err) ->
           return callback(err) if err
 
-          return "all ok!!"
+          console.log "all ok!!"
           callback()
       ]
+    ,(err) ->
+        console.log "########"
+        return console.log err if err
+
+        cb()
 
 
   composeDo: (item, note, cb) ->
@@ -190,6 +195,7 @@ class Sync
     sgg (err, res) ->
       return cb(err) if err
 
+      console.log "--------------"
       cb()
 
 # 下载笔记图片

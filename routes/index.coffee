@@ -13,6 +13,7 @@ Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
 redis = require('../models/redis')()
+RedisNote = require('../servers/redis-note')
 
 Sync2 = require('../servers/sync2')
 help = require('../servers/help')
@@ -193,11 +194,15 @@ router.get '/sync2', (req, res) ->
 #          return res.send "don't need update"
 
     syncInfo: ['checkStatus', (cb) ->
-      sync.syncInfo (err) ->
-        if err
-          return console.log err
+      sync.syncInfo cb
 
-        return console.log "sync all do"
+    ]
+
+    cacheInfo:['syncInfo', (cb) ->
+      rn = new RedisNote()
+      rn.cacheRedis()
+
+      res.send "sync ok"
     ]
 
 

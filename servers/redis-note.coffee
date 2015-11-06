@@ -172,12 +172,7 @@ class RedisNote
 
 
 
-
-
-rn = new RedisNote()
-rn.cacheRedis()
-
-
+module.exports = RedisNote
 
 
 

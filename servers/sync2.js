@@ -96,11 +96,17 @@
               if (err) {
                 return callback(err);
               }
-              return "all ok!!";
+              console.log("all ok!!");
               return callback();
             });
           }
         ]
+      }, function(err) {
+        console.log("########");
+        if (err) {
+          return console.log(err);
+        }
+        return cb();
       });
     };
 
@@ -241,6 +247,7 @@
         if (err) {
           return cb(err);
         }
+        console.log("--------------");
         return cb();
       });
     };
