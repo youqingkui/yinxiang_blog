@@ -32,7 +32,7 @@ router.get '/', (req, res, next) ->
       redis.get 'noteCount', (err, number) ->
         return console.log err if err
 
-        count = number
+        count = Math.ceil number / 10
         cb()
 
     pageNote: (cb) ->

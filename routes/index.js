@@ -58,7 +58,7 @@
           if (err) {
             return console.log(err);
           }
-          count = number;
+          count = Math.ceil(number / 10);
           return cb();
         });
       },
