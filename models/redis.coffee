@@ -1,4 +1,5 @@
 Redis = require('ioredis')
-redis = new Redis()
 
-module.exports = redis
+module.exports = () ->
+  redis = new Redis()
+

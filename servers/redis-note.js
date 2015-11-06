@@ -2,7 +2,7 @@
 (function() {
   var Note, RedisNote, Tags, async, getLocalTime, help, redis, rn;
 
-  redis = require('../models/redis');
+  redis = require('../models/redis')();
 
   Note = require('../models/note');
 

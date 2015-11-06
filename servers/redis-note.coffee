@@ -1,4 +1,4 @@
-redis = require('../models/redis')
+redis = require('../models/redis')()
 Note = require('../models/note')
 Tags = require('../models/tags')
 async = require('async')
