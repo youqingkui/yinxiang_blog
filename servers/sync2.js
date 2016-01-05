@@ -222,6 +222,9 @@
         if (eachErr) {
           return cb(eachErr);
         }
+        $("h3").remove();
+        $("h2").remove();
+        $("del").remove();
         note.htmlContent = $.html();
         return note.save(function(sErr, row) {
           if (sErr) {

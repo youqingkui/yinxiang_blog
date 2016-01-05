@@ -177,6 +177,10 @@ class Sync
     ,(eachErr) ->
       return cb(eachErr) if eachErr
 
+      # 移除内容标题和马克跟踪链接
+      $("h3").remove()
+      $("h2").remove()
+      $("del").remove()
       note.htmlContent = $.html()
       note.save (sErr, row) ->
         return cb(sErr) if sErr
