@@ -13,7 +13,8 @@ Note = require('../models/note')
 Tags = require('../models/tags')
 SyncStatus = require('../models/sync_status')
 
-Sync2 = require('../servers/sync2')
+#Sync2 = require('../servers/sync2')
+Sync3 = require('../servers/sync3')
 help = require('../servers/help')
 getLocalTime = help.getLocalTime
 getYear = help.getYear
@@ -211,28 +212,38 @@ router.get '/about', (req, res) ->
 #    res.send("sync new note ok")
 
 
-router.get '/sync2', (req, res) ->
-  sync = new Sync2()
-
-  async.auto
-    checkStatus: (cb) ->
-      cb()
-#      sync.compleSyncStatus (err, result) ->
+#router.get '/sync2', (req, res) ->
+#  sync = new Sync2()
+#
+#  async.auto
+#    checkStatus: (cb) ->
+#      cb()
+##      sync.compleSyncStatus (err, result) ->
+##        if err
+##          return console.log err
+##
+##        if result is true
+##          cb()
+##        else
+##          return res.send "don't need update"
+#
+#    syncInfo: ['checkStatus', (cb) ->
+#      sync.syncInfo (err) ->
 #        if err
 #          return console.log err
 #
-#        if result is true
-#          cb()
-#        else
-#          return res.send "don't need update"
+#        return console.log "sync all do"
+#    ]
 
-    syncInfo: ['checkStatus', (cb) ->
-      sync.syncInfo (err) ->
-        if err
-          return console.log err
+router.get '/sync3', (req, res) ->
+  sync = new Sync3()
+  sync.doTask () ->
+    console.log "ok"
 
-        return console.log "sync all do"
-    ]
+
+#router.get '/shuoshuo', (req, res) ->
+#  return res.render 'shuoshuo/index'
+
 
 
 #router.get '/img', (req, res) ->
